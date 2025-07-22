@@ -87,6 +87,52 @@ exports.gerarLinkWhatsapp = async (req, res) => {
     }
 };
 
+exports.listarPedidos = async (req, res) => {
+    try {
+        const filtro = {};
+        if (req.query.status) {
+            filtro.status = req,query.status;
+        }
+
+        const pedidos = await Order.find(filtro)
+         .populate('cliente', 'nome telefone')
+         .populate('produtos.produto', 'nome preco')
+         .sort({ createAt: -1 });
+
+        res.json(pedidos);
+    } catch (err) {
+        res.status(500).json({ msg: 'Erro ao listar pedidos' });
+    }
+};
+
+exports.atualizarStatus = async (req, res) => {
+    try {
+        const statusValido = [
+            'pendente',
+            'em preparação',
+            'pronto',
+            'enviado',
+            'concluído'
+        ];
+
+        if (!statusValido.includes(req.body.status)) {
+            return res.status(400).json({ msg: 'Status inválido' });
+        }
+
+        const pedido = await Order.findByIdAndUpdate(
+            req.params.id,
+            { status: req.body.status },
+            { new: true }
+        );
+
+        if (!pedido) return res.status(404).json({ msg: 'Pedido não encontrado' });
+
+        res.json(pedido);
+    } catch (err) {
+        res.status(500).json({ msg: 'Ero ao atualizar status' });
+    }
+};
+
 
 
 
