@@ -28,4 +28,12 @@ mongoose.connect(process.env.MONGO_URI)
   const clientRoutes = require('./routes/clientRoutes');
   app.use('/api/clientes', clientRoutes);
 
+  const productRoutes = require('./routes/productRoutes');
+  app.use('/api/produtos', productRoutes);
+
+  const orderRoutes = require('./routes/orderRoutes');
+  app.use('/api/pedidos', orderRoutes);
+
+  
+
   
