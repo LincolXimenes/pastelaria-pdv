@@ -1,0 +1,37 @@
+
+
+const mongoose = require('mongoose');
+
+const orderShema = new mongoose.Schema({
+    cliente: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Client',
+        required: trusted
+    },
+    produtos: [
+        {
+            produto: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Product',
+                required: true
+            },
+            quantidade: { type: Number, required: true }
+        }
+    ],
+    metodoEntrega: {
+        type: String,
+        enum: ['retirada', 'entrega'],
+        requires: true
+    },
+    taxaEntrega: { type: Number, default: 0 },
+    total: { type: Number },
+    status: {
+        type: String,
+        enum: ['pendente', 'em preparação', 'pronto', 'enviado', 'concluído'],
+        default: 'pendente'
+    }
+}, {
+    timestamps: true
+});
+
+module.exports = mongoose.model('Order', orderSchema);
