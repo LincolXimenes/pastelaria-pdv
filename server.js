@@ -2,9 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 
 // Carregar variáveis de ambiente
 dotenv.config();
+const swaggerDocument = YAML.load('./swagger.yaml');
 
 // Inicializar o app
 const app = express();
@@ -20,6 +23,8 @@ const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 
 // Definir rotas
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 app.use('/api/users', userRoutes);
 app.use('/api/clientes', clientRoutes);
 app.use('/api/produtos', productRoutes);
@@ -39,6 +44,8 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((err) => {
     console.error('Erro ao conectar ao MongoDB:', err.message);
   });
+
+
 
   
 
