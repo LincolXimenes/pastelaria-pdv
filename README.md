@@ -35,9 +35,14 @@ Sistema de gerenciamento de ponto de venda para uma pastelaria. Permite cadastro
 
 **Critérios de Aceitação:**
 
--
+- O sistema deve permitir o cadastro de clientes com nome e telefone.
+- Deve ser possível cadastrar produtos com nome e preço.
+- Pedidos devem conter produtos e estar associados a um cliente.
+- Usuários devem poder ser criados, atualizados e removidos.
+- A API deve retornar status HTTP apropriados para cada operação.
 
 ---
+
 
 ## ✅ Endpoints da API
 
@@ -125,7 +130,10 @@ Sistema de gerenciamento de ponto de venda para uma pastelaria. Permite cadastro
 
 ## 🚀 Futuras Funcionalidades
 
--
+- Login com autenticação JWT
+- Tela de pedidos em tempo real (Socket.IO)
+- Integração com impressora fiscal
+- Dashboard com métricas de vendas
 
 ---
 
@@ -135,5 +143,5 @@ Este projeto é livre para fins de estudo e aprendizado. Para uso comercial, fa�
 
 ---
 
-Feito com ❤️ por Lincoln.
+Feito com dedicação por Lincoln de Mello Ximenes.
 
