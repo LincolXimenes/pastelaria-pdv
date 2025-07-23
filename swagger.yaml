@@ -1,0 +1,283 @@
+openapi: 3.0.3
+info:
+  title: API Pastelaria PDV
+  version: 1.0.0
+  description: API REST para gerenciar pedidos, produtos, clientes e usuários de uma pastelaria.
+
+servers:
+  - url: http://localhost:3000/api
+
+paths:
+  /users:
+    post:
+      summary: Criar novo usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: Usuário criado
+    get:
+      summary: Listar todos os usuários
+      responses:
+        '200':
+          description: Lista de usuários
+
+  /users/{id}:
+    get:
+      summary: Buscar usuário por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dados do usuário
+    put:
+      summary: Atualizar usuário
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Usuário atualizado
+    delete:
+      summary: Deletar usuário
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Usuário deletado
+
+  /clientes:
+    post:
+      summary: Criar novo cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cliente'
+      responses:
+        '201':
+          description: Cliente criado
+    get:
+      summary: Listar clientes
+      responses:
+        '200':
+          description: Lista de clientes
+
+  /clientes/{id}:
+    get:
+      summary: Buscar cliente por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cliente encontrado
+    put:
+      summary: Atualizar cliente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cliente'
+      responses:
+        '200':
+          description: Cliente atualizado
+    delete:
+      summary: Deletar cliente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Cliente removido
+
+  /produtos:
+    post:
+      summary: Criar produto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Produto'
+      responses:
+        '201':
+          description: Produto criado
+    get:
+      summary: Listar produtos
+      responses:
+        '200':
+          description: Lista de produtos
+
+  /produtos/{id}:
+    get:
+      summary: Buscar produto por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Produto encontrado
+    put:
+      summary: Atualizar produto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Produto'
+      responses:
+        '200':
+          description: Produto atualizado
+    delete:
+      summary: Deletar produto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Produto removido
+
+  /pedidos:
+    post:
+      summary: Criar pedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pedido'
+      responses:
+        '201':
+          description: Pedido criado
+    get:
+      summary: Listar pedidos
+      responses:
+        '200':
+          description: Lista de pedidos
+
+  /pedidos/{id}:
+    get:
+      summary: Buscar pedido por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Pedido encontrado
+    put:
+      summary: Atualizar pedido
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pedido'
+      responses:
+        '200':
+          description: Pedido atualizado
+    delete:
+      summary: Deletar pedido
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Pedido removido
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        nome:
+          type: string
+        email:
+          type: string
+        senha:
+          type: string
+
+    Cliente:
+      type: object
+      properties:
+        nome:
+          type: string
+        telefone:
+          type: string
+
+    Produto:
+      type: object
+      properties:
+        nome:
+          type: string
+        preco:
+          type: number
+          format: float
+
+    Pedido:
+      type: object
+      properties:
+        clienteId:
+          type: string
+        produtos:
+          type: array
+          items:
+            type: string
+        total:
+          type: number
