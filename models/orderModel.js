@@ -2,11 +2,11 @@
 
 const mongoose = require('mongoose');
 
-const orderShema = new mongoose.Schema({
+const orderSchema = new mongoose.Schema({
     cliente: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Client',
-        required: trusted
+        required: true
     },
     produtos: [
         {
