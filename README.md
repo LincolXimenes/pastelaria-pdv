@@ -1,6 +1,6 @@
 # Pastelaria PDV 🍴
 
-Sistema de gerenciamento de ponto de venda para uma pastelaria. Permite cadastro e controle de clientes, produtos, pedidos e usuários.
+Sistema de gerenciamento de ponto de venda para uma pastelaria. Permite cadastro e controle de clientes, produtos, pedidos e usuários por meio de uma API REST.
 
 ---
 
@@ -8,7 +8,7 @@ Sistema de gerenciamento de ponto de venda para uma pastelaria. Permite cadastro
 
 **Tecnologias:** Node.js, Express, MongoDB, Mongoose
 
-**Objetivo:** Gerenciar pedidos, clientes, produtos e usuários para uma pastelaria via API REST.
+**Objetivo:** Agilizar o atendimento de uma pastelaria com cadastro e controle de usuários, clientes, produtos e usuários.
 
 ---
 
@@ -21,24 +21,33 @@ Sistema de gerenciamento de ponto de venda para uma pastelaria. Permite cadastro
 ├── models/
 ├── routes/
 ├── utils/
+├── docs/
+│   └── swagger.yaml
 ├── server.js
 ├── .env
 ├── package.json
+├── README.md
 ```
 
 ---
 
 ## 👤 História de Usuário
 
-**Como** funcionário da pastelaria, **Quero** cadastrar clientes, produtos e registrar pedidos,\
+**Como** funcionário da pastelaria, 
+
+**Quero** cadastrar clientes, produtos e registrar pedidos,
+
 **Para** agilizar o atendimento no ponto de venda.
 
 **Critérios de Aceitação:**
 
+- Cadastro, edição e exclusão de clientes, produtos e pedidos.
 - O sistema deve permitir o cadastro de clientes com nome e telefone.
 - Deve ser possível cadastrar produtos com nome e preço.
 - Pedidos devem conter produtos e estar associados a um cliente.
 - Usuários devem poder ser criados, atualizados e removidos.
+- Validação de dados obrigatórios.
+- Autenticação de usuários.
 - A API deve retornar status HTTP apropriados para cada operação.
 
 ---
@@ -95,6 +104,7 @@ Sistema de gerenciamento de ponto de venda para uma pastelaria. Permite cadastro
 - Dotenv para variáveis de ambiente
 - Cors para liberar requisições
 - Nodemon para hot reload
+- Swagger UI para documentação da API
 - Postman para testes
 
 ---
@@ -128,8 +138,18 @@ Sistema de gerenciamento de ponto de venda para uma pastelaria. Permite cadastro
 
 ---
 
+## 📘 Documentação Interativa da API
+
+Após iniciar o servidor:
+
+- Acesse `http://localhost:5000/docs` para visualizar a documentação Swagger gerada a partir do arquivo `docs/swagger.yaml`. 
+
 ## 🚀 Futuras Funcionalidades
 
+- Integração com WhatsApp
+- Interface front-end para uso no balcão
+- Relatórios de vendas e pedidos
+- Login e permissões por perfil de usuário
 - Login com autenticação JWT
 - Tela de pedidos em tempo real (Socket.IO)
 - Integração com impressora fiscal
