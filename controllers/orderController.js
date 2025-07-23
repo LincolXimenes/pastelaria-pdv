@@ -1,5 +1,5 @@
 
-const Order = required('../models/orderModel');
+const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
 
 exports.criarPedido = async (req, res) => {
@@ -76,8 +76,8 @@ const gerarMensagemWhatsApp = require('../utils/whatsappUtils');
 exports.gerarLinkWhatsapp = async (req, res) => {
     try {
         const pedido = await Order.findById(req.params.id)
-         .populate('Cliente', 'nome telefone')
-         .populate('produtos.produto', 'nome.preco');
+            .populate('cliente', 'nome telefone')
+            .populate('produtos.produto', 'nome preco');
         if(!pedido) return res.status(404).json({ msg: 'Pedido não encontrado' });
 
         const link = gerarMensagemWhatsApp(pedido);
