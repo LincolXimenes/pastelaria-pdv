@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const {
@@ -9,11 +8,12 @@ const {
     deletarProduto
 } = require('../controllers/productController');
 
-router.post('/', criarProduto);
-router.get('/', listarProdutos);
-router.get('/', buscarProduto);
-router.put('/', atualizarProduto);
-router.delete('/', deletarProduto);
+// Rotas de produtos
+router.post('/', criarProduto);             // Criar novo produto
+router.get('/', listarProdutos);            // Listar todos os produtos
+router.get('/:id', buscarProduto);          // Buscar produto por ID
+router.put('/:id', atualizarProduto);       // Atualizar produto por ID
+router.delete('/:id', deletarProduto);      // Deletar produto por ID
 
 module.exports = router;
 
