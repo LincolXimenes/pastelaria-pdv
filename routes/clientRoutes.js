@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const {
@@ -9,12 +8,12 @@ const {
     deletarCliente
 } = require('../controllers/clientController');
 
-// Rotas
-router.post('/', criarCliente);
-router.get('/', listarClientes);
-router.get('/:id', buscarCliente);
-router.put('/:id', atualizarCliente);
-router.delete('/:id', deletarCliente);
+// Rotas de clientes
+router.post('/', criarCliente);           // Criar novo cliente
+router.get('/', listarClientes);          // Listar todos os clientes
+router.get('/:id', buscarCliente);        // Buscar cliente por ID
+router.put('/:id', atualizarCliente);     // Atualizar cliente por ID
+router.delete('/:id', deletarCliente);    // Deletar cliente por ID
 
 module.exports = router;
 
