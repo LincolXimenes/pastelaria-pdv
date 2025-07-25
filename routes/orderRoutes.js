@@ -1,21 +1,21 @@
-
 const express = require('express');
 const router = express.Router();
-const orderController = require('../controllers/orderController');
 const {
     criarPedido,
     listarPedidos,
-    atualizarStatus
+    atualizarStatus,
+    gerarLinkWhatsapp,
+    buscarPedido
 } = require('../controllers/orderController');
 
-router.post('/', criarPedido);
-router.get('/', listarPedidos);
-router.patch('/:id/status', atualizarStatus);
+// Rotas de pedidos
+router.post('/', criarPedido);                       // Criar pedido
+router.get('/', listarPedidos);                      // Listar pedidos
+router.get('/:id', buscarPedido);                    // Buscar pedido por ID
+router.patch('/:id/status', atualizarStatus);        // Atualizar status do pedido
+router.get('/:id/whatsapp', gerarLinkWhatsapp);      // Gerar link do WhatsApp
 
 module.exports = router;
-
-const { gerarLinkWhatsapp } = require('../controllers/orderController');
-router.get('/:id/whatsapp', orderController.gerarLinkWhatsapp);
 
 
 
