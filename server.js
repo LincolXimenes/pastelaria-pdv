@@ -16,22 +16,32 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Rotas da documentação Swagger
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 // Importação das rotas
 const userRoutes = require('./routes/userRoutes');
 const clientRoutes = require('./routes/clientRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 
-// Definir rotas
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
+// Rotas da API
 app.use('/api/users', userRoutes);
 app.use('/api/clientes', clientRoutes);
 app.use('/api/produtos', productRoutes);
 app.use('/api/pedidos', orderRoutes);
 
-// Porta
-const PORT = process.env.PORT || 3000;
+// Rota raiz
+app.get('/', (req, res) => {
+  res.send('API Pastelaria PDV rodando!');
+});
+
+// Rota para não encontrados
+app.use((req, res) => {
+  res.status(404).json({ msg: 'Rota não encontrada' });
+});
+
+const PORT = process.env.PORT || 5000;
 
 // Conectar ao MongoDB e iniciar o servidor
 mongoose.connect(process.env.MONGO_URI)
@@ -47,6 +57,5 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 
-  
 
-  
+
