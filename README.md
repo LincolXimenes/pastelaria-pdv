@@ -4,7 +4,11 @@ Sistema de gerenciamento de ponto de venda para uma pastelaria. Permite cadastro
 
 ---
 
-## 📦 Instalação e Uso
+## 📦 Instalação e Uso (manualmente ou automatizado com os serviços rodando em docker)
+
+<br>
+
+## Manualmente:
 
 ### 1. **Pré-requisitos**
 - Node.js (versão 18 ou superior)
@@ -37,6 +41,32 @@ npm run dev
 O servidor estará disponível em `http://localhost:5000`.
 
 ---
+
+<br>
+
+## Automatizado com docker:
+
+### 1. **Pré-requisitos**
+- docker
+- docker-compose
+
+### 2. **Clonando o projeto**
+```bash
+git clone https://github.com/seu-usuario/pastelaria-pdv.git
+cd pastelaria-pdv
+```
+
+### 3. **Rode o comando**
+```bash
+docker-compose up -d
+```
+
+### 4. **Servidor**
+
+O servidor estará disponível em `http://localhost:5000`.
+
+---
+
 
 ## 🗂️ Estrutura de Pastas
 
