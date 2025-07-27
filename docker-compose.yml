@@ -1,0 +1,30 @@
+services: 
+  mongo_db_pastelaria:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - pastelaria_data:/data/db
+    restart: always
+    networks:
+      - net-pastelaria
+  
+  api-pastelaria:
+    container_name: api-pastelaria
+    build: .
+    image: api-pastelaria:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb://mongo_db_pastelaria:27017/pastelaria
+    depends_on:
+      - mongo_db_pastelaria
+    restart: always
+    networks:
+      - net-pastelaria
+
+volumes:
+  pastelaria_data:
+
+networks:
+  net-pastelaria:
