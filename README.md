@@ -16,7 +16,7 @@ Sistema de gerenciamento de ponto de venda para uma pastelaria. Permite cadastro
 
 ### 2. **Clonando o projeto**
 ```bash
-git clone https://github.com/seu-usuario/pastelaria-pdv.git
+git clone https://github.com/LincolXimenes/pastelaria-pdv.git
 cd pastelaria-pdv
 ```
 
@@ -52,7 +52,7 @@ O servidor estará disponível em `http://localhost:5000`.
 
 ### 2. **Clonando o projeto**
 ```bash
-git clone https://github.com/seu-usuario/pastelaria-pdv.git
+git clone https://github.com/LincolXimenes/pastelaria-pdv.git
 cd pastelaria-pdv
 ```
 
