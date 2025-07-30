@@ -3,6 +3,10 @@ const Product = require('../models/productModel');
 // Criar novo produto
 exports.criarProduto = async (req, res) => {
     try {
+        const { nome, preco } = req.body;
+        if (!nome || typeof preco !== 'number') {
+            return res.status(400).json({ msg: 'Nome e preço são obrigatórios.' });            
+        }
         const produto = await Product.create(req.body);
         res.status(201).json(produto);
     } catch (err) {
@@ -13,7 +17,12 @@ exports.criarProduto = async (req, res) => {
 // Listar todos os produtos
 exports.listarProdutos = async (req, res) => {
     try {
-        const produtos = await Product.find().sort({ createdAt: -1 });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;        
+        const produtos = await Product.find()
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
         res.json(produtos);
     } catch (err) {
         res.status(500).json({ msg: 'Erro ao buscar produtos', erro: err.message });
@@ -28,6 +37,35 @@ exports.buscarProduto = async (req, res) => {
         res.json(produto);
     } catch (err) {
         res.status(500).json({ msg: 'Erro ao buscar produto', erro: err.message });
+    }
+};
+
+//Buscar produto por nome
+exports.buscarPorNome = async (req, res) => {
+    try {
+        const nome = req.body.nome;
+        if (!nome) return res.status(400).json({ msg: 'Informe o nome para busca' });
+        const produtos = await Product.find({ nome: { $regex: nome, $options: 'i' } });
+        res.json(produtos);
+    } catch (err) {
+        res.status(500).json({ msg: 'Erro ao buscar produto por nome', erro: err.message });
+    }
+};
+
+// Atualizar estoque
+exports.atualizarEstoque = async (req, res) => {
+    try {
+        const { quantidade } = req.body;
+        if (typeof quantidade !== 'number') return res.status(400).json({ msg: 'Quantidade inválida.' });
+        const produto = await Product.findByIdAndUpdate(
+            req.params.id,
+            { $set: { quantidade } },
+            { new: true }
+       );
+       if (!produto) return res.status(404).json({ msg: 'Produto não encontrado' });
+       res.json(produto);
+    } catch (err) {
+        res.status(500).json({ msg: 'Erro ao atualizar estoque', erro: err.message });
     }
 };
 
