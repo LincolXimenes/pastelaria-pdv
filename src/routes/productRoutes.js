@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../middleware/authMiddleware');
 const {
     criarProduto,
     listarProdutos,
@@ -9,6 +10,8 @@ const {
     buscarPorNome,
     atualizarEstoque,
 } = require('../controllers/productController');
+
+router.get('/protegido', auth, listarProdutos);
 
 // Rotas de produtos
 router.post('/', criarProduto);                // Criar novo produto
