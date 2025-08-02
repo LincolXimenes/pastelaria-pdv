@@ -1,10 +1,8 @@
 const User = require('../models/userModel');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
-const gerarToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-};
+const JWT_SECRET = process.env.JWT_SECRET || 'seu segredo aqui'; 
 
 exports.registrarUsuario = async (req, res) => {
     const { nome, email, senha, isAdmin } = req.body;
@@ -96,3 +94,37 @@ exports.deletarUsuario = async (req, res) => {
     }
 };
 
+exports.login = async (req, res) => {
+    const { email, senha } = req.body;
+
+    if (!email || !senha) {
+        return res.status(400).json({ msg: 'Email e senha são obrigatórios' });
+    }
+
+    try {
+        const usuario = await User.findOne({ email });
+        if (!usuario) {
+            return res.status(401).json({ msg: 'Credenciais inválidas' });
+        }
+
+        const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
+        if (!senhaCorreta) {
+            return res.status(401).json({ msg: 'Credenciais inválidas' });
+        }
+
+        const token = jwt.sign(
+            { id: usuario._id, email: usuario.mail },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN || 'id' }
+        );
+
+        res.json({ token });
+    } catch (err) {
+        res.status(500).json({ msg: 'Erro no login', erro: err.message });
+    }
+};
+
+const gerarToken = (id) => {
+    return jwt.sign({ id }, JWT_SECRET, { 
+        expiresIn: '1d' });
+}

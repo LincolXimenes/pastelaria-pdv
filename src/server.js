@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const corsOptions = require('./config/corsOptions');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 
@@ -13,15 +14,7 @@ const swaggerDocument = YAML.load('./swagger.yaml');
 const app = express();
 
 // Middlewares
-/*app.use(cors());*/
-const corsOptions = {
-  origin: 'http://localhost:5173',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
-
 app.use(cors(corsOptions));
-
 app.use(express.json());
 
 // Rotas da documentação Swagger
