@@ -4,7 +4,7 @@ const Client = require('../models/clientModel');
 exports.criarCliente = async (req, res) => {
     try {
         const { nome, telefone } = req.body;
-        if (!nome || !telefone) {
+        if (!nome.trim() || !telefone.trim()) {
             return res.status(400).json({ msg: 'Nome e telefone são obrigatórios.' });
         }
         const cliente = await Client.create(req.body);
