@@ -145,7 +145,6 @@ describe('Listar Cliente na camada controller', () => {
 
         expect(clientModel.find).toHaveBeenCalled();
         expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.status).not.toHaveBeenCalledWith(!500);
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
             msg: 'Erro ao buscar clientes',
             erro: 'Falha no banco'
@@ -153,5 +152,36 @@ describe('Listar Cliente na camada controller', () => {
     })
 
 
+
+
+describe('atualização de cliente na camada controller cliente', () => {
+
+    const req = {params: {id: '123'} , body: {nome:'testeAtualizado', telefone: '11 98374-9384'}}
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    })
+
+
+    test ('atualiza cliente com sucesso', async () => {
+
+        const clienteAtualizado = {id: '123', nome: 'testeAtualizado', telefone: '11 98374-9384'}
+        clientModel.findByIdAndUpdate.mockResolvedValue(clienteAtualizado);
+
+        const res = responseMock;
+
+        await clientController.atualizarCliente(req, res)
+
+        expect(clientModel.findByIdAndUpdate).toHaveBeenCalledWith('123', {nome: 'testeAtualizado', telefone: '11 98374-9384'}, {new: true})
+        expect(res.json).toHaveBeenCalledWith(clienteAtualizado);
+        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+            id: '123',
+            nome: 'testeAtualizado',
+            telefone: '11 98374-9384'
+
+        }))
+
+    })
+})
 
 });
