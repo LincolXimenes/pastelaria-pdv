@@ -6,7 +6,13 @@ const clientModel = require('../src/models/clientModel');
 
 jest.mock('../src/models/clientModel');
 
-describe("criar cliente controller", () => {
+// Mock do response
+ const responseMock = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
+    }
+
+describe("criar cliente na camada controller", () => {
 
 
     afterEach(() => {
@@ -23,10 +29,7 @@ describe("criar cliente controller", () => {
             body: mockCliente
         };
 
-        const res = {
-            status: jest.fn().mockReturnThis(),
-            json: jest.fn()
-        };
+       const res = responseMock;
 
         await clientController.criarCliente(req, res);
         
@@ -42,14 +45,8 @@ describe("criar cliente controller", () => {
 
             const mockCliente = { nome: 'Fulano de tal', telefone: ' ' };
 
-            const req = {
-                body: mockCliente
-            };
-
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn()
-            };
+            const req = { body: mockCliente };
+           const res = responseMock;
 
         await clientController.criarCliente(req, res);
 
@@ -67,14 +64,8 @@ describe("criar cliente controller", () => {
 
             const mockCliente = {nome: ' ' , telefone: '11 97389-6382'}
 
-            const req = {
-                body: mockCliente
-            };
-
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn()
-            };
+            const req = {body: mockCliente};
+            const res = responseMock;
 
             await clientController.criarCliente(req, res);
 
@@ -91,11 +82,7 @@ describe("criar cliente controller", () => {
             clientModel.create.mockRejectedValue (new Error('Falha no banco'))
 
             const req = {body: mockCliente};
-            const res = {
-                status: jest.fn().mockReturnThis(),
-                json: jest.fn()
-
-            }
+            const res = responseMock;
 
             await clientController.criarCliente(req, res);
 
@@ -111,3 +98,31 @@ describe("criar cliente controller", () => {
 
 
     });
+
+
+
+describe('Listar Cliente na camada controller', () => {
+    test('Lista clientes com sucesso', async () => {
+    
+     const mockClientes = [
+      {
+        nome: 'teste new',
+        email: 'teste123@gmail.com',
+        senha: 'teste123',
+        isAdmin: false
+      }
+    ];
+
+    clientModel.find = jest.fn().mockReturnValue({
+        sort: jest.fn().mockResolvedValue(mockClientes)});
+
+    const req = {}
+    const res = responseMock;
+
+    await clientController.listarClientes(req, res)
+
+    expect(clientModel.find).toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith(mockClientes)
+
+    })
+});
