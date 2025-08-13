@@ -69,7 +69,7 @@ describe("criar cliente na camada controller", () => {
 
     })
 
-    test('Tentativa de criar cliente dando erro no banco de dados', async () => {
+    test('Tentativa de criar cliente com erro no banco de dados', async () => {
 
         const mockCliente = { nome: 'Fulano de tal', telefone: '11 97389-6382' };
         clientModel.create.mockRejectedValue (new Error('Falha no banco'))
