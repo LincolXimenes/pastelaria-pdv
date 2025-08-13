@@ -59,7 +59,7 @@ describe('atualização de cliente na camada controller cliente', () => {
         clientModel.findByIdAndUpdate.mockResolvedValue(cliente);
 
         const res = responseMock;
-        const request = {params: {id: '123'} , body: {nome:'', telefone: '11 98374-9384'}}
+        const request = {params: {id: '123'} , body: {nome:' ', telefone: '11 98374-9384'}}
         await clientController.atualizarCliente(request, res)
         
         expect(clientModel.findByIdAndUpdate).not.toHaveBeenCalled();
@@ -74,7 +74,7 @@ describe('atualização de cliente na camada controller cliente', () => {
         clientModel.findByIdAndUpdate.mockResolvedValue(cliente);
 
         const res = responseMock;
-        const request = {params: {id: '123'} , body: {nome:'testeAtualizado', telefone: ''}}
+        const request = {params: {id: '123'} , body: {nome:'testeAtualizado', telefone: ' '}}
         await clientController.atualizarCliente(request, res)
         
         expect(clientModel.findByIdAndUpdate).not.toHaveBeenCalled();
@@ -85,7 +85,7 @@ describe('atualização de cliente na camada controller cliente', () => {
     })
 
     test('Tentativa de atualizar cliente dando erro no banco de dados', async () => {
-        clientModel.findByIdAndUpdate.mockRejectValue(new Error('Falha no banco'))
+        clientModel.findByIdAndUpdate.mockRejectedValue(new Error('Falha no banco'))
 
         const res = responseMock;
         await clientController.atualizarCliente(req, res);

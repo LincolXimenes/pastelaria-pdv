@@ -39,7 +39,7 @@ exports.buscarCliente = async (req, res) => {
 exports.atualizarCliente = async (req, res) => {
     try {
         const { nome, telefone } = req.body;
-        if (!nome || !telefone) {
+        if (!nome.trim() || !telefone.trim()) {
             return res.status(400).json({ msg: 'Nome e telefone são obrigatórios.' });
         }
         const clienteAtualizado = await Client.findByIdAndUpdate(
