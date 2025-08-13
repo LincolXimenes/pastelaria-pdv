@@ -23,7 +23,15 @@ describe('Listar Cliente na camada controller', () => {
         email: 'teste123@gmail.com',
         senha: 'teste123',
         isAdmin: false
+      },
+
+      {
+        nome: 'teste new 2',
+        email: 'teste321@gmail.com',
+        senha: 'teste321',
+        isAdmin: true
       }
+
     ];
 
         clientModel.find = jest.fn().mockReturnValue({

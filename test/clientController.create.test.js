@@ -31,7 +31,6 @@ describe("criar cliente na camada controller", () => {
         expect(clientModel.create).toHaveBeenCalledWith(mockCliente);
         expect(res.status).toHaveBeenCalledWith(201);
         expect(res.status).not.toHaveBeenCalledWith(500);
-        expect(res.json.mock.calls[0][0]).toEqual(mockCliente)
         expect(res.json).toHaveBeenCalledWith(mockCliente);
     });
 
@@ -51,7 +50,6 @@ describe("criar cliente na camada controller", () => {
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.status).not.toHaveBeenCalledWith(201);
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining ({msg: 'Nome e telefone são obrigatórios.'}))
-        expect(res.json.mock.calls[0][0]).toEqual({ msg: 'Nome e telefone são obrigatórios.'});
 
     });
 
