@@ -22,15 +22,12 @@ describe('atualização de cliente na camada controller cliente', () => {
 
         const cliente = {id: '123' , nome: 'testeAtualizado', telefone: '11 98374-9384'}
         clientModel.findByIdAndUpdate.mockResolvedValue(cliente);
-
-        const res = responseMock;
-
-        await clientController.atualizarCliente(req, res)
+        await clientController.atualizarCliente(req, responseMock)
 
         expect(clientModel.findByIdAndUpdate).toHaveBeenCalled();
         expect(clientModel.findByIdAndUpdate).toHaveBeenCalledWith('123',{nome: 'testeAtualizado', telefone: '11 98374-9384'}, {new : true})
-        expect(res.json).toHaveBeenCalledWith(cliente);
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        expect(responseMock.json).toHaveBeenCalledWith(cliente);
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
             id: '123',
             nome: 'testeAtualizado',
             telefone: '11 98374-9384'
@@ -42,13 +39,12 @@ describe('atualização de cliente na camada controller cliente', () => {
     test('tentativa de atualização de cliente inexistente', async () => {
 
         clientModel.findByIdAndUpdate.mockResolvedValue(null);
-        const res = responseMock;
-        await clientController.atualizarCliente(req , res);
+        await clientController.atualizarCliente(req , responseMock);
 
         expect(clientModel.findByIdAndUpdate).toHaveBeenCalled();
         expect(clientModel.findByIdAndUpdate).toHaveBeenCalledWith('123', {nome: 'testeAtualizado', telefone: '11 98374-9384'}, {new : true});
-        expect(res.status).toHaveBeenCalledWith(404);
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        expect(responseMock.status).toHaveBeenCalledWith(404);
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
             msg: 'Cliente não encontrado'
         }));
 
@@ -57,14 +53,12 @@ describe('atualização de cliente na camada controller cliente', () => {
     test('tentativa de atualização de cliente com nome vazio', async () => {
         const cliente = {id: '123' , nome: 'testeAtualizado', telefone: '11 98374-9384'}
         clientModel.findByIdAndUpdate.mockResolvedValue(cliente);
-
-        const res = responseMock;
         const request = {params: {id: '123'} , body: {nome:' ', telefone: '11 98374-9384'}}
-        await clientController.atualizarCliente(request, res)
+        await clientController.atualizarCliente(request, responseMock)
         
         expect(clientModel.findByIdAndUpdate).not.toHaveBeenCalled();
-        expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        expect(responseMock.status).toHaveBeenCalledWith(400);
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
             msg: 'Nome e telefone são obrigatórios.'
         }));
     })
@@ -72,27 +66,23 @@ describe('atualização de cliente na camada controller cliente', () => {
     test('tentativa de atualização de cliente com telefone vazio', async () => {
         const cliente = {id: '123' , nome: 'testeAtualizado', telefone: '11 98374-9384'}
         clientModel.findByIdAndUpdate.mockResolvedValue(cliente);
-
-        const res = responseMock;
         const request = {params: {id: '123'} , body: {nome:'testeAtualizado', telefone: ' '}}
-        await clientController.atualizarCliente(request, res)
+        await clientController.atualizarCliente(request, responseMock);
         
         expect(clientModel.findByIdAndUpdate).not.toHaveBeenCalled();
-        expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        expect(responseMock.status).toHaveBeenCalledWith(400);
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
             msg: 'Nome e telefone são obrigatórios.'
         }));
     })
 
     test('Tentativa de atualizar cliente dando erro no banco de dados', async () => {
-        clientModel.findByIdAndUpdate.mockRejectedValue(new Error('Falha no banco'))
-
-        const res = responseMock;
-        await clientController.atualizarCliente(req, res);
+        clientModel.findByIdAndUpdate.mockRejectedValue(new Error('Falha no banco'));
+        await clientController.atualizarCliente(req, responseMock);
 
         expect(clientModel.findByIdAndUpdate).toHaveBeenCalled();
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        expect(responseMock.status).toHaveBeenCalledWith(500);
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
             msg: 'Erro ao atualizar cliente',
             erro: 'Falha no banco'
         }))
