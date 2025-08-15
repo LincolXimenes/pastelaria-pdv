@@ -70,9 +70,6 @@ describe("criar cliente na camada controller", () => {
 
         expect(clientModel.create).toHaveBeenCalled();
         expect(responseMock.status).toHaveBeenCalledWith(500);
-        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
-            msg: 'Erro ao cadastrar cliente',
-            erro: 'Falha no banco'
-        }))
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({ msg: 'Erro ao cadastrar cliente', erro: 'Falha no banco' }))
     })
 });
