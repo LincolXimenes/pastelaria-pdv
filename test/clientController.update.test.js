@@ -44,10 +44,8 @@ describe('atualização de cliente na camada controller cliente', () => {
         expect(clientModel.findByIdAndUpdate).toHaveBeenCalled();
         expect(clientModel.findByIdAndUpdate).toHaveBeenCalledWith('123', {nome: 'testeAtualizado', telefone: '11 98374-9384'}, {new : true});
         expect(responseMock.status).toHaveBeenCalledWith(404);
-        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
-            msg: 'Cliente não encontrado'
-        }));
-
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({ msg: 'Cliente não encontrado'}));
+        
     })
 
     test('tentativa de atualização de cliente com nome vazio', async () => {
@@ -58,9 +56,7 @@ describe('atualização de cliente na camada controller cliente', () => {
         
         expect(clientModel.findByIdAndUpdate).not.toHaveBeenCalled();
         expect(responseMock.status).toHaveBeenCalledWith(400);
-        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
-            msg: 'Nome e telefone são obrigatórios.'
-        }));
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({ msg: 'Nome e telefone são obrigatórios.' }));
     })
 
     test('tentativa de atualização de cliente com telefone vazio', async () => {
@@ -71,9 +67,7 @@ describe('atualização de cliente na camada controller cliente', () => {
         
         expect(clientModel.findByIdAndUpdate).not.toHaveBeenCalled();
         expect(responseMock.status).toHaveBeenCalledWith(400);
-        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
-            msg: 'Nome e telefone são obrigatórios.'
-        }));
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({ msg: 'Nome e telefone são obrigatórios.' }));
     })
 
     test('Tentativa de atualizar cliente dando erro no banco de dados', async () => {
@@ -82,9 +76,6 @@ describe('atualização de cliente na camada controller cliente', () => {
 
         expect(clientModel.findByIdAndUpdate).toHaveBeenCalled();
         expect(responseMock.status).toHaveBeenCalledWith(500);
-        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
-            msg: 'Erro ao atualizar cliente',
-            erro: 'Falha no banco'
-        }))
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({ msg: 'Erro ao atualizar cliente', erro: 'Falha no banco' }))
     })
 });

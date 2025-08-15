@@ -8,7 +8,6 @@ describe('Buscar cliente por id na camada controller', () => {
 
     const req = {params: {id:'355'}, body: {nome: "Cliente teste", telefone: '11 98633-4724'}}
     const userClienteCorreto = {id: '355', nome: 'Cliente teste', telefone: '11 98633-4724'}
-    const userClienteIncorreto = {id: '535', nome: 'Cliente teste', telefone: '11 98633-4724'}
 
     const responseMock = {
         status: jest.fn().mockReturnThis(),
@@ -35,9 +34,7 @@ describe('Buscar cliente por id na camada controller', () => {
         await clientController.buscarCliente(req, responseMock)
 
         expect(responseMock.status).toHaveBeenCalledWith(404);
-        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
-            msg: 'Cliente não encontrado'
-        }))
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({ msg: 'Cliente não encontrado' }))
     })
 
     test('Tentativa de buscar cliente com falha no banco', async () => {
@@ -45,9 +42,6 @@ describe('Buscar cliente por id na camada controller', () => {
         await clientController.buscarCliente(req, responseMock)
 
         expect(responseMock.status).toHaveBeenCalledWith(500);
-        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
-            erro: 'Falha no banco',
-            msg: 'Erro ao buscar cliente'
-        }))
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({erro: 'Falha no banco', msg: 'Erro ao buscar cliente'}))
     })
 })

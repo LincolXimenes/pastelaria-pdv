@@ -54,10 +54,7 @@ describe('Listar Cliente na camada controller', () => {
 
         expect(clientModel.find).toHaveBeenCalled();
         expect(responseMock.status).toHaveBeenCalledWith(500);
-        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
-            msg: 'Erro ao buscar clientes',
-            erro: 'Falha no banco'
-        }))
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({ msg: 'Erro ao buscar clientes', erro: 'Falha no banco' }))
     })
 
 });
