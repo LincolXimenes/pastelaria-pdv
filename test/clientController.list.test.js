@@ -34,16 +34,12 @@ describe('Listar Cliente na camada controller', () => {
 
     ];
 
-        clientModel.find = jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue(mockClientes)});
-
+        clientModel.find = jest.fn().mockReturnValue({ sort: jest.fn().mockResolvedValue(mockClientes) });
         const req = {}
-        const res = responseMock;
-
-        await clientController.listarClientes(req, res)
+        await clientController.listarClientes(req, responseMock)
 
         expect(clientModel.find).toHaveBeenCalled();
-        expect(res.json).toHaveBeenCalledWith(mockClientes)
+        expect(responseMock.json).toHaveBeenCalledWith(mockClientes)
 
     })
 
@@ -52,17 +48,13 @@ describe('Listar Cliente na camada controller', () => {
 
     test('Lista clientes com falha', async () => {
 
-        clientModel.find = jest.fn().mockReturnValue({
-        sort: jest.fn().mockRejectedValue(new Error ('Falha no banco'))})
-
+        clientModel.find = jest.fn().mockReturnValue({ sort: jest.fn().mockRejectedValue(new Error ('Falha no banco')) })
         const req = {}
-        const res = responseMock;
-
-        await clientController.listarClientes(req, res);
+        await clientController.listarClientes(req, responseMock);
 
         expect(clientModel.find).toHaveBeenCalled();
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        expect(responseMock.status).toHaveBeenCalledWith(500);
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({
             msg: 'Erro ao buscar clientes',
             erro: 'Falha no banco'
         }))

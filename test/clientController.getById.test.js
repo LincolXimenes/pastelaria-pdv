@@ -15,6 +15,10 @@ describe('Buscar cliente por id na camada controller', () => {
         json: jest.fn()
     }
 
+    afterEach(() => {
+        jest.clearAllMocks();
+    })
+
     test('Buscar cliente por id com sucesso', async () => {
         clientModel.findById.mockResolvedValue(userClienteCorreto);
 
