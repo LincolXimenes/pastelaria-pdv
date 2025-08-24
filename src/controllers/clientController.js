@@ -56,12 +56,16 @@ exports.atualizarCliente = async (req, res) => {
 
 // Deletar cliente
 exports.deletarCliente = async (req, res) => {
+    if (!req.user || req.user.id.toString() !== req.params.id) {
+        return res.status(403).json({ msg: 'Você só pode excluir seu próprio cadastro' });
+    }
+
     try {
-        const clienteDeletado = await Client.findByIdAndDelete(req.params.id);
-        if (!clienteDeletado) return res.status(404).json({ msg: 'Cliente não encontrado' });
+        const deletado = await Cliente.findByIdAndDelete(req.params.id);
+        if (!deletado) return res.status(404).json({ msg: 'Cliente não encontrado' });
         res.json({ msg: 'Cliente deletado com sucesso' });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao deletar cliente', erro: err.message });
+        res.status(500).json({ msg: 'Erro ao deletar cliente', erro: err.message});
     }
 };
 

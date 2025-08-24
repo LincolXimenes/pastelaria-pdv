@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const corsOptions = require('./config/corsOptions');
+const authRoutes = require('./routes/authRoutes');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 
