@@ -1,5 +1,7 @@
+const { models } = require('mongoose');
 const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
+const Pedido = require('../models/orderModel');
 const gerarMensagemWhatsApp = require('../utils/whatsappUtils');
 
 // Criar pedido
@@ -125,6 +127,31 @@ exports.gerarLinkWhatsapp = async (req, res) => {
         res.status(500).json({ msg: 'Erro ao gerar link', erro: err.message });
     }
 };
+
+// Cancelar pedido (apenas administradores)
+exports.cancelarPedido = async (req, res) => {
+    if (!req.user || !req.user.isAdmin) {
+        return res.status(403).json({ msg: 'Acesso negado: apenas administradores' });
+    }
+
+    try {
+        const pedido = await Pedido.findById(req.params.id);
+        if (!pedido) return res.status(404).json({ msg: 'Pedido não encontrado' });
+
+        // Repor estoque antes de deletar
+        for (const item of pedido.produtos) {
+            await Product.findByIdAndUpdate(item.produto, {
+                $inc: { quantidade: item.quantidade },
+            });
+        }
+
+        await pedido.deleteOne(); // Agora deleta o pedido
+
+        res.json({ msg: 'Pedido cancelado com sucesso' });
+    } catch (err) {
+        res.status(500).json({ msg: 'Erro ao cancelar pedido', erro: err.message });
+    }
+}
 
 
 
