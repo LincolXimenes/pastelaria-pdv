@@ -21,7 +21,7 @@ const orderSchema = new mongoose.Schema({
     metodoEntrega: {
         type: String,
         enum: ['retirada', 'entrega'],
-        requires: true
+        required: true
     },
     taxaEntrega: { type: Number, default: 0 },
     total: { type: Number },

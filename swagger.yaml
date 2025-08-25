@@ -1,4 +1,3 @@
-
 openapi: 3.0.3
 info:
   title: API Pastelaria PDV
@@ -11,7 +10,7 @@ servers:
 paths:
   /users/register:
     post:
-      summary: Criar novo usuário
+      summary: Criar novo usuário (apenas admin)
       requestBody:
         required: true
         content:
@@ -53,7 +52,7 @@ paths:
 
   /users/{id}:
     get:
-      summary: Buscar usuário por ID
+      summary: Buscar usuário por ID (autenticado)
       parameters:
         - name: id
           in: path
@@ -64,7 +63,7 @@ paths:
         '200':
           description: Dados do usuário
     put:
-      summary: Atualizar usuário
+      summary: Atualizar usuário (autenticado)
       parameters:
         - name: id
           in: path
@@ -81,7 +80,7 @@ paths:
         '200':
           description: Usuário atualizado
     delete:
-      summary: Deletar usuário
+      summary: Deletar usuário (apenas admin)
       parameters:
         - name: id
           in: path
@@ -92,9 +91,9 @@ paths:
         '204':
           description: Usuário deletado
 
-  /clientes:
+  /clientes/register:
     post:
-      summary: Criar novo cliente
+      summary: Registrar novo cliente
       requestBody:
         required: true
         content:
@@ -104,15 +103,61 @@ paths:
       responses:
         '201':
           description: Cliente criado
+
+  /clientes/login:
+    post:
+      summary: Login de cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - senha
+              properties:
+                email:
+                  type: string
+                senha:
+                  type: string
+      responses:
+        '200':
+          description: Login bem-sucedido
+
+  /clientes/me:
     get:
-      summary: Listar clientes
+      summary: Buscar próprio perfil (cliente autenticado)
+      responses:
+        '200':
+          description: Dados do cliente
+    put:
+      summary: Atualizar próprio perfil (cliente autenticado)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cliente'
+      responses:
+        '200':
+          description: Cliente atualizado
+    delete:
+      summary: Deletar próprio perfil (cliente autenticado)
+      responses:
+        '204':
+          description: Cliente removido
+
+  /clientes:
+    get:
+      summary: Listar clientes (apenas admin)
       responses:
         '200':
           description: Lista de clientes
 
   /clientes/{id}:
     get:
-      summary: Buscar cliente por ID
+      summary: Buscar cliente por ID (apenas admin)
       parameters:
         - name: id
           in: path
@@ -123,7 +168,7 @@ paths:
         '200':
           description: Cliente encontrado
     put:
-      summary: Atualizar cliente
+      summary: Atualizar cliente (apenas admin)
       parameters:
         - name: id
           in: path
@@ -140,7 +185,7 @@ paths:
         '200':
           description: Cliente atualizado
     delete:
-      summary: Deletar cliente
+      summary: Deletar cliente (apenas admin)
       parameters:
         - name: id
           in: path
@@ -153,7 +198,7 @@ paths:
 
   /produtos:
     post:
-      summary: Criar produto
+      summary: Criar produto (admin ou funcionário)
       requestBody:
         required: true
         content:
@@ -169,6 +214,19 @@ paths:
         '200':
           description: Lista de produtos
 
+  /produtos/search:
+    get:
+      summary: Buscar produto por nome
+      parameters:
+        - name: nome
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Produtos encontrados
+
   /produtos/{id}:
     get:
       summary: Buscar produto por ID
@@ -182,7 +240,7 @@ paths:
         '200':
           description: Produto encontrado
     put:
-      summary: Atualizar produto
+      summary: Atualizar produto (admin ou funcionário)
       parameters:
         - name: id
           in: path
@@ -199,7 +257,7 @@ paths:
         '200':
           description: Produto atualizado
     delete:
-      summary: Deletar produto
+      summary: Deletar produto (apenas admin)
       parameters:
         - name: id
           in: path
@@ -209,6 +267,30 @@ paths:
       responses:
         '204':
           description: Produto removido
+
+  /produtos/{id}/estoque:
+    put:
+      summary: Atualizar estoque do produto (admin ou funcionário)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - quantidade
+              properties:
+                quantidade:
+                  type: integer
+      responses:
+        '200':
+          description: Estoque atualizado
 
   /pedidos:
     post:
@@ -223,14 +305,14 @@ paths:
         '201':
           description: Pedido criado
     get:
-      summary: Listar pedidos
+      summary: Listar pedidos (apenas admin)
       responses:
         '200':
           description: Lista de pedidos
 
   /pedidos/{id}:
     get:
-      summary: Buscar pedido por ID
+      summary: Buscar pedido por ID (autenticado)
       parameters:
         - name: id
           in: path
@@ -240,8 +322,21 @@ paths:
       responses:
         '200':
           description: Pedido encontrado
-    put:
-      summary: Atualizar pedido
+    delete:
+      summary: Cancelar pedido (apenas admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Pedido removido
+
+  /pedidos/{id}/status:
+    patch:
+      summary: Atualizar status do pedido (autenticado)
       parameters:
         - name: id
           in: path
@@ -253,12 +348,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Pedido'
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pendente, em preparação, pronto, enviado, concluído]
       responses:
         '200':
-          description: Pedido atualizado
-    delete:
-      summary: Deletar pedido
+          description: Status atualizado
+
+  /pedidos/{id}/whatsapp:
+    get:
+      summary: Gerar link do WhatsApp para o pedido (autenticado)
       parameters:
         - name: id
           in: path
@@ -266,8 +369,8 @@ paths:
           schema:
             type: string
       responses:
-        '204':
-          description: Pedido removido
+        '200':
+          description: Link gerado
 
 components:
   schemas:
@@ -284,6 +387,9 @@ components:
           type: string
         senha:
           type: string
+        role:
+          type: string
+          enum: [admin, gerente, funcionario]
         isAdmin:
           type: boolean
 
@@ -291,13 +397,36 @@ components:
       type: object
       required:
         - nome
+        - email
+        - senha
         - telefone
       properties:
         nome:
           type: string
+        email:
+          type: string
+        senha:
+          type: string
         telefone:
           type: string
         endereco:
+          type: object
+          properties:
+            rua:
+              type: string
+            numero:
+              type: string
+            complemento:
+              type: string
+            bairro:
+              type: string
+            cidade:
+              type: string
+            estado:
+              type: string
+            cep:
+              type: string
+        observacoes:
           type: string
 
     Produto:
@@ -308,28 +437,47 @@ components:
       properties:
         nome:
           type: string
+        descricao:
+          type: string
         preco:
           type: number
           format: float
+        categoria:
+          type: string
         imagem:
           type: string
+        emEstoque:
+          type: boolean
+        quantidade:
+          type: integer
+        destaque:
+          type: boolean
 
     Pedido:
       type: object
       required:
-        - clienteId
+        - cliente
         - produtos
-        - total
+        - metodoEntrega
       properties:
-        clienteId:
+        cliente:
           type: string
         produtos:
           type: array
           items:
-            type: string
+            type: object
+            properties:
+              produto:
+                type: string
+              quantidade:
+                type: integer
+        metodoEntrega:
+          type: string
+          enum: [retirada, entrega]
+        taxaEntrega:
+          type: number
         total:
           type: number
         status:
           type: string
-        metodoEntrega:
-          type: string
+          enum: [pendente, em preparação, pronto, enviado, concluído]

@@ -1,19 +1,33 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../middleware/authMiddleware');
+const isAdmin = require('../middleware/isAdmin');
 const {
     criarPedido,
     listarPedidos,
     atualizarStatus,
     gerarLinkWhatsapp,
-    buscarPedido
+    buscarPedido,
+    cancelarPedido   
 } = require('../controllers/orderController');
 
-// Rotas de pedidos
-router.post('/', criarPedido);                       // Criar pedido
-router.get('/', listarPedidos);                      // Listar pedidos
-router.get('/:id', buscarPedido);                    // Buscar pedido por ID
-router.patch('/:id/status', atualizarStatus);        // Atualizar status do pedido
-router.get('/:id/whatsapp', gerarLinkWhatsapp);      // Gerar link do WhatsApp
+// Criar pedido (público autenticado)
+router.post('/', criarPedido);                                        // Criar pedido
+
+// Listar todos os pedidos (apenas admin)
+router.get('/', auth, isAdmin, listarPedidos);                                       // Listar pedidos
+
+// Buscar pedido por ID (autenticado)
+router.get('/:id', auth, buscarPedido);                                     // Buscar pedido por ID
+
+// Atualizar status do pedido (autenticado)
+router.patch('/:id/status', auth, atualizarStatus);                         // Atualizar status do pedido
+
+// Gerar Link do Whatsapp (autenticado)
+router.get('/:id/whatsapp', auth, gerarLinkWhatsapp);                       // Gerar link do WhatsApp
+
+// Cancelar pedido (apenas admin)
+router.delete('/:id', auth, isAdmin, cancelarPedido);                 // Cancelar pedido (apenas administradores)
 
 module.exports = router;
 

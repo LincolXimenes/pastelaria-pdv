@@ -1,11 +1,12 @@
+
+
 const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
     const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith('Bearer '))
         return res.status(401).json({ msg: 'Token não fornecido ou inválido' });
-    }
 
     const token = authHeader.split(' ')[1];
 
