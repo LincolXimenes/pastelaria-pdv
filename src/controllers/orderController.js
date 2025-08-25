@@ -1,8 +1,8 @@
-const { models } = require('mongoose');
 const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
-const Pedido = require('../models/orderModel');
 const gerarMensagemWhatsApp = require('../utils/whatsappUtils');
+//const { models } = require('mongoose');
+//const Pedido = require('../models/orderModel');
 
 // Criar pedido
 exports.criarPedido = async (req, res) => {

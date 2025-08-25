@@ -14,7 +14,7 @@ const {
     deletarProprioCadastro
 } = require('../controllers/clientController');
 
-// Cadastro e login
+// Cadastro e login (públicos)
 router.post('/register', criarCliente);
 router.post('/login', loginCliente);
 
@@ -23,12 +23,11 @@ router.get('/me', auth, validateRole('client'), buscarCliente);
 router.put('/me', auth, validateRole('client'), atualizarCliente);
 router.delete('/me', auth, validateRole('client'), deletarProprioCadastro);
 
-// Rotas de clientes
-router.get('/', auth, validateRole('admin'), listarClientes);                                  // Listar todos os clientes
-router.get('/:id', buscarCliente);                                // Buscar cliente por ID
-router.put('/:id', auth, isClient, atualizarCliente);                             // Atualizar cliente por ID
-router.delete('/:id', auth, isClient, deletarProprioCadastro);    // Deletar próprio cadastro
-router.delete('/:id', auth, isAdmin, deletarCliente);             // Deletar cliente por ID
+// Rotas administrativas
+router.get('/', auth, validateRole('admin'), listarClientes);        // Listar todos os clientes
+router.get('/:id', auth, validateRole('admin'), buscarCliente);      // Buscar cliente por ID
+router.put('/:id', auth, validateRole('admin'), atualizarCliente);   // Atualizar cliente por ID
+router.delete('/:id', auth, validateRole('admin'), deletarCliente);  // Deletar cliente por ID
 
 module.exports = router;
 

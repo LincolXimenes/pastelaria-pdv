@@ -1,21 +1,20 @@
-
 const mongoose = require('mongoose');
 
 const clientSchema = new mongoose.Schema({
-    nome: { type: String, required: true },
+    name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    senha: {type: String, required:  true},
-    telefone: { type: String, required: true },
-    endereço: {
-        rua: String,
-        numero: String,
-        complemento: String,
-        bairro: String,
-        cidade: String,
-        estado: String,
-        cep: String
+    password: {type: String, required:  true},
+    phone: { type: String, required: true },
+    address: {
+        street: String,
+        number: String,
+        complement: String,
+        neighborhood: String,
+        city: String,
+        state: String,
+        zip: String
     },
-    observações: { type: String }
+    notes: { type: String }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Client', clientSchema);
