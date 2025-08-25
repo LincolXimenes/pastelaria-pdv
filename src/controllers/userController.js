@@ -4,6 +4,10 @@ const bcrypt = require('bcryptjs');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'seu segredo aqui'; 
 
+const gerarToken = (id, isAdmin = false) => {
+    return jwt.sign({ is, isAdmin }, JWT_SECRET, { expiresIn: '1d' });
+};
+
 exports.registrarUsuario = async (req, res) => {
     const { nome, email, senha, isAdmin } = req.body;
 
@@ -31,7 +35,7 @@ exports.registrarUsuario = async (req, res) => {
             nome: novoUsuario.nome,
             email: novoUsuario.email,
             isAdmin: novoUsuario.isAdmin,
-            token: gerarToken(novoUsuario._id)
+            token: gerarToken(novoUsuario._id, novoUsuario.isAdmin)
         });
     } catch (err) {
         res.status(500).json({ msg: 'Erro ao registrar usuário', erro: err.message });
@@ -47,7 +51,6 @@ exports.loginUsuario = async (req, res) => {
         }
 
         const usuario = await User.findOne({ email });
-
         if (!usuario || !(await bcrypt.compare(senha, usuario.senha))) {
             return res.status(401).json({ msg: 'Credenciais inválidas' });
         }
@@ -57,7 +60,7 @@ exports.loginUsuario = async (req, res) => {
             nome: usuario.nome,
             email: usuario.email,
             isAdmin: usuario.isAdmin,
-            token: gerarToken(usuario._id)
+            token: gerarToken(usuario._id, usuario.isAdmin)
         });
     } catch (err) {
         res.status(500).json({ msg: 'Erro no login', erro: err.message });
@@ -76,7 +79,15 @@ exports.buscarUsuario = async (req, res) => {
 
 exports.atualizarUsuario = async (req, res) => {
     try {
-        const atualizado = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updateData = { ...req.body };
+        // se for atualizar a senha, faça o hash
+        if (updateData.senha) {
+            updateData.senha = await bcrypt.hash(updateData.senha, 10);
+        }
+        // nunca permita atualizar o campo _id
+        delete updateData._id;
+
+        const atualizado = await User.findByIdAndUpdate(req.params.id, updateData, { new: true }).select('-senha');
         if (!atualizado) return res.status(404).json({ msg: 'Usuário não encontrado' });
         res.json(atualizado);
     } catch (err) {
@@ -94,37 +105,3 @@ exports.deletarUsuario = async (req, res) => {
     }
 };
 
-exports.login = async (req, res) => {
-    const { email, senha } = req.body;
-
-    if (!email || !senha) {
-        return res.status(400).json({ msg: 'Email e senha são obrigatórios' });
-    }
-
-    try {
-        const usuario = await User.findOne({ email });
-        if (!usuario) {
-            return res.status(401).json({ msg: 'Credenciais inválidas' });
-        }
-
-        const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
-        if (!senhaCorreta) {
-            return res.status(401).json({ msg: 'Credenciais inválidas' });
-        }
-
-        const token = jwt.sign(
-            { id: usuario._id, email: usuario.mail },
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRES_IN || 'id' }
-        );
-
-        res.json({ token });
-    } catch (err) {
-        res.status(500).json({ msg: 'Erro no login', erro: err.message });
-    }
-};
-
-const gerarToken = (id) => {
-    return jwt.sign({ id }, JWT_SECRET, { 
-        expiresIn: '1d' });
-}

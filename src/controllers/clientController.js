@@ -42,6 +42,11 @@ exports.atualizarCliente = async (req, res) => {
         if (!nome.trim() || !telefone.trim()) {
             return res.status(400).json({ msg: 'Nome e telefone são obrigatórios.' });
         }
+
+        // limitar campos que podem ser atualizados
+        // const updateData = { nome, telefone };
+        //if (req.body.endereco) updateData.endereco = req.body.endereco;
+
         const clienteAtualizado = await Client.findByIdAndUpdate(
             req.params.id,
             req.body,
@@ -56,13 +61,28 @@ exports.atualizarCliente = async (req, res) => {
 
 // Deletar cliente
 exports.deletarCliente = async (req, res) => {
+    if (!req.user || req.user.id.toString() !== req.params.id) {
+        return res.status(403).json({ msg: 'Você só pode excluir seu próprio cadastro' });
+    }
+
     try {
-        const clienteDeletado = await Client.findByIdAndDelete(req.params.id);
-        if (!clienteDeletado) return res.status(404).json({ msg: 'Cliente não encontrado' });
+        const deletado = await Client.findByIdAndDelete(req.params.id);
+        if (!deletado) return res.status(404).json({ msg: 'Cliente não encontrado' });
         res.json({ msg: 'Cliente deletado com sucesso' });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao deletar cliente', erro: err.message });
+        res.status(500).json({ msg: 'Erro ao deletar cliente', erro: err.message});
     }
 };
 
+// Login de cliente (placeholder)
+exports.loginCliente = async (req, res) => {
+    // Implemente a lógica de autenticação aqui
+    res.status(501).json({ msg: 'loginCliente não implementado' });
+};
+
+// Deletar o próprio cadastro (placeholder)
+exports.deletarProprioCadastro = async (req, res) => {
+    // Implemente a lógica para o cliente deletar o próprio cadastro aqui
+    res.status(501).json({ msg: 'deletarProprioCadastro não implementado' });
+};
 
