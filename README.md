@@ -4,69 +4,61 @@ Sistema de gerenciamento de ponto de venda para uma pastelaria. Permite cadastro
 
 ---
 
-## 📦 Instalação e Uso (manualmente ou automatizado com os serviços rodando em docker)
+## 📦 Instalação e Uso
 
-<br>
+### Manualmente
 
-## Manualmente:
-
-### 1. **Pré-requisitos**
-- Node.js (versão 18 ou superior)
+**Pré-requisitos**
+- Node.js (18+)
 - MongoDB rodando localmente ou em nuvem
 
-### 2. **Clonando o projeto**
+**Clonando o projeto**
 ```bash
 git clone https://github.com/LincolXimenes/pastelaria-pdv.git
 cd pastelaria-pdv
 ```
 
-### 3. **Instalando dependências**
+**Instalando dependências**
 ```bash
 npm install
 ```
 
-### 4. **Configurando variáveis de ambiente**
-Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo (ajuste conforme necessário):
-
+**Configurando variáveis de ambiente**
+Crie um arquivo `.env` na raiz do projeto:
 ```env
 PORT=5000
 MONGO_URI=mongodb://localhost:27017/pastelaria
 JWT_SECRET=umaChaveSecretaForte123!@#
+JWT_EXPIRES_IN=1d
 ```
 
-### 5. **Iniciando o servidor**
+**Iniciando o servidor**
 ```bash
 npm run dev
 ```
-O servidor estará disponível em `http://localhost:5000`.
+Acesse: [http://localhost:5000](http://localhost:5000)
 
 ---
 
-<br>
+### Com Docker
 
-## Automatizado com docker:
-
-### 1. **Pré-requisitos**
+**Pré-requisitos**
 - docker
 - docker-compose
 
-### 2. **Clonando o projeto**
+**Clonando o projeto**
 ```bash
 git clone https://github.com/LincolXimenes/pastelaria-pdv.git
 cd pastelaria-pdv
 ```
 
-### 3. **Rode o comando**
+**Subindo os serviços**
 ```bash
 docker-compose up -d
 ```
-
-### 4. **Servidor**
-
-O servidor estará disponível em `http://localhost:5000`.
+Acesse: [http://localhost:5000](http://localhost:5000)
 
 ---
-
 
 ## 🗂️ Estrutura de Pastas
 
@@ -90,52 +82,53 @@ O servidor estará disponível em `http://localhost:5000`.
 ## ✅ Endpoints da API
 
 ### 🔐 `/api/users`
-| Método | Rota                   | Ação              |
-| ------ | ---------------------- | ----------------- |
-| POST   | `/api/users/register`  | Criar usuário     |
-| POST   | `/api/users/login`     | Login de usuário  |
-| GET    | `/api/users/:id`       | Buscar por ID     |
-| PUT    | `/api/users/:id`       | Atualizar usuário |
-| DELETE | `/api/users/:id`       | Deletar usuário   |
+| Método | Rota                      | Ação              | Permissão         |
+| ------ | ------------------------- | ----------------- | ---------------- |
+| POST   | `/api/users/register`     | Criar usuário     | Admin            |
+| POST   | `/api/users/login`        | Login de usuário  | Público          |
+| GET    | `/api/users/:id`          | Buscar por ID     | Autenticado      |
+| PUT    | `/api/users/:id`          | Atualizar usuário | Autenticado      |
+| DELETE | `/api/users/:id`          | Deletar usuário   | Admin            |
 
 ### 👥 `/api/clientes`
-| Método | Rota                   | Ação                  |
-| ------ | ---------------------- | --------------------- |
-| POST   | `/api/clientes`        | Criar cliente         |
-| GET    | `/api/clientes`        | Listar clientes       |
-| GET    | `/api/clientes/:id`    | Buscar cliente por ID |
-| PUT    | `/api/clientes/:id`    | Atualizar cliente     |
-| DELETE | `/api/clientes/:id`    | Deletar cliente       |
+| Método | Rota                        | Ação                  | Permissão         |
+| ------ | --------------------------- | --------------------- | ---------------- |
+| POST   | `/api/clientes/register`    | Criar cliente         | Público          |
+| POST   | `/api/clientes/login`       | Login cliente         | Público          |
+| GET    | `/api/clientes/me`          | Buscar próprio perfil | Cliente          |
+| PUT    | `/api/clientes/me`          | Atualizar perfil      | Cliente          |
+| DELETE | `/api/clientes/me`          | Deletar próprio perfil| Cliente          |
+| GET    | `/api/clientes`             | Listar clientes       | Admin            |
+| GET    | `/api/clientes/:id`         | Buscar cliente por ID | Admin            |
+| PUT    | `/api/clientes/:id`         | Atualizar cliente     | Admin            |
+| DELETE | `/api/clientes/:id`         | Deletar cliente       | Admin            |
 
 ### 📦 `/api/produtos`
-| Método | Rota                   | Ação                  |
-| ------ | ---------------------- | --------------------- |
-| POST   | `/api/produtos`        | Criar produto         |
-| GET    | `/api/produtos`        | Listar produtos       |
-| GET    | `/api/produtos/:id`    | Buscar produto por ID |
-| PUT    | `/api/produtos/:id`    | Atualizar produto     |
-| DELETE | `/api/produtos/:id`    | Deletar produto       |
+| Método | Rota                         | Ação                  | Permissão                |
+| ------ | ---------------------------- | --------------------- | ------------------------|
+| POST   | `/api/produtos`              | Criar produto         | Admin, Funcionário      |
+| GET    | `/api/produtos`              | Listar produtos       | Público                 |
+| GET    | `/api/produtos/:id`          | Buscar produto por ID | Público                 |
+| GET    | `/api/produtos/search?nome=` | Buscar produto por nome| Público                |
+| PUT    | `/api/produtos/:id`          | Atualizar produto     | Admin, Funcionário      |
+| PUT    | `/api/produtos/:id/estoque`  | Atualizar estoque     | Admin, Funcionário      |
+| DELETE | `/api/produtos/:id`          | Deletar produto       | Admin                   |
 
 ### 📏 `/api/pedidos`
-| Método | Rota                           | Ação                        |
-| ------ | ------------------------------ | --------------------------- |
-| POST   | `/api/pedidos`                 | Criar pedido                |
-| GET    | `/api/pedidos`                 | Listar pedidos              |
-| GET    | `/api/pedidos/:id`             | Buscar pedido por ID        |
-| PATCH  | `/api/pedidos/:id/status`      | Atualizar status do pedido  |
-| DELETE | `/api/pedidos/:id`             | Deletar pedido              |
-| GET    | `/api/pedidos/:id/whatsapp`    | Gerar link do WhatsApp      |
+| Método | Rota                           | Ação                        | Permissão         |
+| ------ | ------------------------------ | --------------------------- | ---------------- |
+| POST   | `/api/pedidos`                 | Criar pedido                | Público/Cliente  |
+| GET    | `/api/pedidos`                 | Listar pedidos              | Admin            |
+| GET    | `/api/pedidos/:id`             | Buscar pedido por ID        | Autenticado      |
+| PATCH  | `/api/pedidos/:id/status`      | Atualizar status do pedido  | Autenticado      |
+| DELETE | `/api/pedidos/:id`             | Cancelar pedido             | Admin            |
+| GET    | `/api/pedidos/:id/whatsapp`    | Gerar link do WhatsApp      | Autenticado      |
 
 ---
 
 ## 📘 Documentação Interativa da API
 
-Após iniciar o servidor, acesse:
-
-```
-http://localhost:5000/docs
-```
-para visualizar a documentação Swagger gerada a partir do arquivo `docs/swagger.yaml`.
+Acesse [http://localhost:5000/docs](http://localhost:5000/docs) para visualizar a documentação Swagger.
 
 ---
 
@@ -159,8 +152,8 @@ para visualizar a documentação Swagger gerada a partir do arquivo `docs/swagge
 
 ## 🔒 Autenticação
 
-- Autenticação JWT para rotas protegidas (em desenvolvimento)
-- Middleware `authMiddleware.js` já criado para futuras proteções
+- Autenticação JWT para rotas protegidas
+- Middleware `authMiddleware.js` para proteção de rotas
 
 ---
 
@@ -170,7 +163,8 @@ para visualizar a documentação Swagger gerada a partir do arquivo `docs/swagge
 ```json
 {
   "nome": "Pastel de Carne",
-  "preco": 8.5
+  "preco": 8.5,
+  "quantidade": 10
 }
 ```
 
@@ -178,6 +172,8 @@ para visualizar a documentação Swagger gerada a partir do arquivo `docs/swagge
 ```json
 {
   "nome": "João Silva",
+  "email": "joao@email.com",
+  "senha": "senha123",
   "telefone": "11999999999"
 }
 ```
@@ -189,7 +185,7 @@ para visualizar a documentação Swagger gerada a partir do arquivo `docs/swagge
   "produtos": [
     { "produto": "id_do_produto", "quantidade": 2 }
   ],
-  "metodoEntrega": "balcao",
+  "metodoEntrega": "retirada",
   "taxaEntrega": 0
 }
 ```
@@ -214,5 +210,7 @@ Este projeto é livre para fins de estudo e aprendizado. Para uso comercial, fa�
 
 ---
 
-Feito com dedicação por Lincoln de Mello Ximenes
+Feito com dedicação por:
 
+- Lincoln de Mello Ximenes
+- Thiago Fonseca

@@ -11,9 +11,9 @@ const {
 } = require('../controllers/userController');
 
 router.post('/register', auth, validateRole('admin'), registrarUsuario);      // Registrar novo usuário
-router.post('/login', loginUsuario);             // Login de usuário
-router.get('/:id', auth, buscarUsuario);               // Buscar usuário por ID
-router.put('/:id', auth, atualizarUsuario);            // Atualizar usuário por ID
+router.post('/login', loginUsuario);                                          // Login de usuário
+router.get('/:id', auth, buscarUsuario);                                      // Buscar usuário por ID
+router.put('/:id', auth, atualizarUsuario);                                 // Atualizar usuário por ID
 router.delete('/:id', auth, validateRole('admin'), deletarUsuario);           // Deletar usuário por ID
 
 module.exports = router;

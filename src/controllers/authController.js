@@ -24,7 +24,7 @@ exports.login = async (req, res) => {
 
         if (!user) return res.status(400).json({ msg: 'Usuário/Cliente não encontrado' });
 
-        const match = await bcrypt.compare(senha, user,senha);
+        const match = await bcrypt.compare(senha, user.senha);
         if (!match) return res.status(401).json({ msg: 'Senha inválida'});
 
         res.json({
