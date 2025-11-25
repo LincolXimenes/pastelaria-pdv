@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const corsOptions = require('./config/corsOptions');
-const authRoutes = require('./routes/authRoutes');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 
@@ -51,12 +50,12 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Verificação de variáveis de ambientes essenciais
+// Verificação de variáveis de ambiente essenciais
 if (!process.env.MONGO_URI) {
   console.error('MONGO_URI não definida no .env');
   process.exit(1);
 }
-if(!process.env.JWT_SECRET) {
+if (!process.env.JWT_SECRET) {
   console.warn('JWT_SECRET não definida no .env. Usando valor padrão inseguro!');
 }
 

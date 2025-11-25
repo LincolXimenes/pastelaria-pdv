@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/authMiddleware');
 const validateRole = require('../middleware/validateRole');
-const isClient = require('../middleware/isClient');
-const isAdmin = require('../middleware/isAdmin')
 const {
     criarCliente,
     loginCliente,
@@ -18,16 +16,16 @@ const {
 router.post('/register', criarCliente);
 router.post('/login', loginCliente);
 
-//Apenas o próprio cliente autenticado pode acessar ou excluir
-router.get('/me', auth, validateRole('client'), buscarCliente);
-router.put('/me', auth, validateRole('client'), atualizarCliente);
-router.delete('/me', auth, validateRole('client'), deletarProprioCadastro);
+// Apenas o próprio cliente autenticado pode acessar
+router.get('/me', auth, validateRole('cliente'), buscarCliente);
+router.put('/me', auth, validateRole('cliente'), atualizarCliente);
+router.delete('/me', auth, validateRole('cliente'), deletarProprioCadastro);
 
 // Rotas administrativas
-router.get('/', auth, validateRole('admin'), listarClientes);        // Listar todos os clientes
-router.get('/:id', auth, validateRole('admin'), buscarCliente);      // Buscar cliente por ID
-router.put('/:id', auth, validateRole('admin'), atualizarCliente);   // Atualizar cliente por ID
-router.delete('/:id', auth, validateRole('admin'), deletarCliente);  // Deletar cliente por ID
+router.get('/', auth, validateRole('admin'), listarClientes);
+router.get('/:id', auth, validateRole('admin'), buscarCliente);
+router.put('/:id', auth, validateRole('admin'), atualizarCliente);
+router.delete('/:id', auth, validateRole('admin'), deletarCliente);
 
 module.exports = router;
 
