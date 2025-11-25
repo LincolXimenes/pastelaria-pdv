@@ -3,24 +3,33 @@ const Product = require('../models/productModel');
 // Criar novo produto
 exports.criarProduto = async (req, res) => {
     try {
-        const { nome, preco, quantidade } = req.body;
-        if (!nome || typeof preco !== 'number') {
-            return res.status(400).json({ msg: 'Nome e preço são obrigatórios.' });
+        const { nome, preco, categoria } = req.body;
+        
+        if (!nome || !preco || !categoria) {
+            return res.status(400).json({ msg: 'Nome, preço e categoria são obrigatórios.' });
         }
-        const produto = await Product.create({ nome, preco, quantidade });
+
+        const produto = await Product.create(req.body);
         res.status(201).json(produto);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao cadastrar produto', erro: err.message });
-    } 
+        res.status(500).json({ msg: 'Erro ao criar produto', erro: err.message });
+    }
 };
 
 // Listar todos os produtos
 exports.listarProdutos = async (req, res) => {
     try {
-        const produtos = await Product.find().sort({ createdAt: -1 });
+        const { categoria, emEstoque, destaque } = req.query;
+        const filtros = { ativo: true };
+
+        if (categoria) filtros.categoria = categoria;
+        if (emEstoque !== undefined) filtros.emEstoque = emEstoque === 'true';
+        if (destaque !== undefined) filtros.destaque = destaque === 'true';
+
+        const produtos = await Product.find(filtros).sort({ createdAt: -1 });
         res.json(produtos);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao buscar produtos', erro: err.message });
+        res.status(500).json({ msg: 'Erro ao listar produtos', erro: err.message });
     }
 };
 
@@ -28,32 +37,49 @@ exports.listarProdutos = async (req, res) => {
 exports.buscarProduto = async (req, res) => {
     try {
         const produto = await Product.findById(req.params.id);
-        if (!produto) return res.status(404).json({ msg: 'Produto não encontrado' });
+        if (!produto || !produto.ativo) {
+            return res.status(404).json({ msg: 'Produto não encontrado' });
+        }
         res.json(produto);
     } catch (err) {
         res.status(500).json({ msg: 'Erro ao buscar produto', erro: err.message });
     }
 };
 
-//Buscar produto por nome (busca parcial, case-insensitive)
+// Buscar produtos por nome
 exports.buscarPorNome = async (req, res) => {
     try {
-        const nome = req.query.nome;
-        if (!nome) return res.status(400).json({ msg: 'Informe o nome para busca.' });
-        const produtos = await Product.find({ nome: { $regex: nome, $options: 'i' } });
-        if (!produtos.lenght) return res.status(404).json({ msg: 'Produto não encontrado' });
+        const { nome } = req.query;
+        
+        if (!nome) {
+            return res.status(400).json({ msg: 'Nome é obrigatório para busca' });
+        }
+
+        const produtos = await Product.find({
+            nome: { $regex: nome, $options: 'i' },
+            ativo: true
+        });
+
         res.json(produtos);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao buscar produto', erro: err.message });
+        res.status(500).json({ msg: 'Erro ao buscar produtos', erro: err.message });
     }
 };
 
 // Atualizar produto
 exports.atualizarProduto = async (req, res) => {
     try {
-        const atualizado = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!atualizado) return res.status(404).json({ msg: 'Produto não encontrado' });
-        res.json(atualizado);
+        const produtoAtualizado = await Product.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+
+        if (!produtoAtualizado) {
+            return res.status(404).json({ msg: 'Produto não encontrado' });
+        }
+
+        res.json(produtoAtualizado);
     } catch (err) {
         res.status(500).json({ msg: 'Erro ao atualizar produto', erro: err.message });
     }
@@ -63,27 +89,44 @@ exports.atualizarProduto = async (req, res) => {
 exports.atualizarEstoque = async (req, res) => {
     try {
         const { quantidade } = req.body;
-        if (typeof quantidade !== 'number') {
-            return res.status(404).json({ msg: 'Quantidade inválida' });
+
+        if (quantidade === undefined || quantidade < 0) {
+            return res.status(400).json({ msg: 'Quantidade deve ser um número não negativo' });
         }
-        const atualizado = await Product.findByIdAndUpdate(
+
+        const produto = await Product.findByIdAndUpdate(
             req.params.id,
-            { quantidade },
-            { new: true }
+            { 
+                quantidade,
+                emEstoque: quantidade > 0
+            },
+            { new: true, runValidators: true }
         );
-        if (!atualizado) return res.status(404).json({ msg: 'Produto não encontrado' });
-        res.json(atualizado);
+
+        if (!produto) {
+            return res.status(404).json({ msg: 'Produto não encontrado' });
+        }
+
+        res.json(produto);
     } catch (err) {
         res.status(500).json({ msg: 'Erro ao atualizar estoque', erro: err.message });
     }
 };
 
-// Deletar produto
+// Deletar produto (desativar)
 exports.deletarProduto = async (req, res) => {
     try {
-        const deletado = await Product.findByIdAndDelete(req.params.id);
-        if (!deletado) return res.status(404).json({ msg: 'Produto não encontrado' });
-        res.json({ msg: 'Produto deletado com sucesso' });
+        const produto = await Product.findByIdAndUpdate(
+            req.params.id,
+            { ativo: false },
+            { new: true }
+        );
+
+        if (!produto) {
+            return res.status(404).json({ msg: 'Produto não encontrado' });
+        }
+
+        res.json({ msg: 'Produto desativado com sucesso' });
     } catch (err) {
         res.status(500).json({ msg: 'Erro ao deletar produto', erro: err.message });
     }

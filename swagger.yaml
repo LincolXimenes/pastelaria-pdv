@@ -10,7 +10,8 @@ servers:
 paths:
   /users/register:
     post:
-      summary: Criar novo usuário (apenas admin)
+      summary: Criar novo usuário (público para primeiro usuário)
+      security: [] # Remove autenticação para esta rota
       requestBody:
         required: true
         content:
@@ -28,6 +29,7 @@ paths:
   /users/login:
     post:
       summary: Login de usuário
+      security: [] # Remove autenticação para esta rota
       requestBody:
         required: true
         content:
@@ -40,8 +42,10 @@ paths:
               properties:
                 email:
                   type: string
+                  example: "admin@pastelaria.com"
                 senha:
                   type: string
+                  example: "123456"
       responses:
         '200':
           description: Login bem-sucedido
@@ -94,6 +98,7 @@ paths:
   /clientes/register:
     post:
       summary: Registrar novo cliente
+      security: []
       requestBody:
         required: true
         content:
@@ -107,6 +112,7 @@ paths:
   /clientes/login:
     post:
       summary: Login de cliente
+      security: []
       requestBody:
         required: true
         content:
@@ -210,6 +216,7 @@ paths:
           description: Produto criado
     get:
       summary: Listar produtos
+      security: []
       responses:
         '200':
           description: Lista de produtos
@@ -217,6 +224,7 @@ paths:
   /produtos/search:
     get:
       summary: Buscar produto por nome
+      security: []
       parameters:
         - name: nome
           in: query
@@ -230,6 +238,7 @@ paths:
   /produtos/{id}:
     get:
       summary: Buscar produto por ID
+      security: []
       parameters:
         - name: id
           in: path
@@ -295,6 +304,7 @@ paths:
   /pedidos:
     post:
       summary: Criar pedido
+      security: []
       requestBody:
         required: true
         content:
@@ -372,7 +382,14 @@ paths:
         '200':
           description: Link gerado
 
+# COMPONENTES DEFINIDOS UMA VEZ SÓ
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     User:
       type: object
@@ -383,15 +400,16 @@ components:
       properties:
         nome:
           type: string
+          example: "Admin Principal"
         email:
           type: string
+          example: "admin@pastelaria.com"
         senha:
           type: string
-        role:
-          type: string
-          enum: [admin, gerente, funcionario]
+          example: "123456"
         isAdmin:
           type: boolean
+          example: true
 
     Cliente:
       type: object
@@ -403,12 +421,16 @@ components:
       properties:
         nome:
           type: string
+          example: "João Silva"
         email:
           type: string
+          example: "joao@teste.com"
         senha:
           type: string
+          example: "123456"
         telefone:
           type: string
+          example: "(11) 99999-9999"
         endereco:
           type: object
           properties:
@@ -434,24 +456,33 @@ components:
       required:
         - nome
         - preco
+        - categoria
       properties:
         nome:
           type: string
+          example: "Pastel de Carne"
         descricao:
           type: string
+          example: "Delicioso pastel recheado com carne temperada"
         preco:
           type: number
           format: float
+          example: 8.50
         categoria:
           type: string
+          enum: [pastel, bebida, doce, salgado, outros]
+          example: "pastel"
         imagem:
           type: string
         emEstoque:
           type: boolean
+          example: true
         quantidade:
           type: integer
+          example: 10
         destaque:
           type: boolean
+          example: false
 
     Pedido:
       type: object
@@ -462,6 +493,7 @@ components:
       properties:
         cliente:
           type: string
+          example: "673f1234567890abcdef1234"
         produtos:
           type: array
           items:
@@ -469,15 +501,25 @@ components:
             properties:
               produto:
                 type: string
+                example: "673f1234567890abcdef5678"
               quantidade:
                 type: integer
+                example: 2
         metodoEntrega:
           type: string
           enum: [retirada, entrega]
+          example: "retirada"
         taxaEntrega:
           type: number
+          example: 0
         total:
           type: number
+          example: 17.00
         status:
           type: string
           enum: [pendente, em preparação, pronto, enviado, concluído]
+          example: "pendente"
+
+# SEGURANÇA GLOBAL (com exceções nas rotas específicas)
+security:
+  - BearerAuth: []

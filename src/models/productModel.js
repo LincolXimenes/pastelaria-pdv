@@ -1,26 +1,36 @@
-
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    description: { type: String },
-    price: { 
-        type: Number, 
-        required: true,
-        min: [0, 'O preço não pode ser negativo']
+    nome: { 
+        type: String, 
+        required: [true, 'Nome do produto é obrigatório'],
+        trim: true,
+        minlength: [2, 'Nome deve ter pelo menos 2 caracteres']
     },
-    category: { type: String },
-    image: { type: String },
-    inStock: { type: Boolean, default: true },
-    quantity: { 
+    descricao: { 
+        type: String, 
+        maxlength: [500, 'Descrição não pode exceder 500 caracteres']
+    },
+    preco: { 
+        type: Number, 
+        required: [true, 'Preço é obrigatório'],
+        min: [0, 'Preço não pode ser negativo']
+    },
+    categoria: { 
+        type: String, 
+        required: [true, 'Categoria é obrigatória'],
+        enum: ['pastel', 'bebida', 'doce', 'salgado', 'outros']
+    },
+    imagem: { type: String },
+    emEstoque: { type: Boolean, default: true },
+    quantidade: { 
         type: Number, 
         default: 0,
-        min: [0, 'A quantidade não pode ser negativa']
+        min: [0, 'Quantidade não pode ser negativa']
     },
-    highlight: { type: Boolean, default: false }
-}, {
-    timestamps: true
-});
+    destaque: { type: Boolean, default: false },
+    ativo: { type: Boolean, default: true }
+}, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);
 
