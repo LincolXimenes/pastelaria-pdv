@@ -1,6 +1,7 @@
 const Client = require('../models/clientModel');
-const bcrypt = require('bcryptjs'); // ou 'bcrypt' se instalou a primeira versão
+const bcrypt = require('bcrypt');
 const { gerarToken } = require('../utils/tokenUtils');
+const { sendServerError } = require('../utils/errorUtils');
 
 // Criar novo cliente
 exports.criarCliente = async (req, res) => {
@@ -28,7 +29,7 @@ exports.criarCliente = async (req, res) => {
         const cliente = await Client.create(clienteData);
         res.status(201).json(cliente);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao cadastrar cliente', erro: err.message });
+        sendServerError(res, 'Erro ao cadastrar cliente', err);
     }
 };
 
@@ -70,17 +71,44 @@ exports.loginCliente = async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro no login', erro: err.message });
+        sendServerError(res, 'Erro no login', err);
     }
 };
 
 // Listar todos os clientes
 exports.listarClientes = async (req, res) => {
     try {
-        const clientes = await Client.find({ ativo: true }).sort({ createdAt: -1 });
-        res.json(clientes);
+        const query = req.query || {};
+        const page = Number.parseInt(query.page, 10);
+        const limit = Number.parseInt(query.limit, 10);
+        const shouldPaginate = Number.isInteger(page) || Number.isInteger(limit);
+
+        if (!shouldPaginate) {
+            const clientes = await Client.find({ ativo: true }).sort({ createdAt: -1 });
+            return res.json(clientes);
+        }
+
+        const safePage = Number.isInteger(page) && page > 0 ? page : 1;
+        const safeLimitRaw = Number.isInteger(limit) && limit > 0 ? limit : 20;
+        const safeLimit = Math.min(safeLimitRaw, 100);
+        const skip = (safePage - 1) * safeLimit;
+
+        const [clientes, total] = await Promise.all([
+            Client.find({ ativo: true }).sort({ createdAt: -1 }).skip(skip).limit(safeLimit),
+            Client.countDocuments({ ativo: true })
+        ]);
+
+        return res.json({
+            data: clientes,
+            pagination: {
+                page: safePage,
+                limit: safeLimit,
+                total,
+                totalPages: Math.ceil(total / safeLimit)
+            }
+        });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao buscar clientes', erro: err.message });
+        sendServerError(res, 'Erro ao buscar clientes', err);
     }
 };
 
@@ -90,7 +118,7 @@ exports.buscarCliente = async (req, res) => {
         let clienteId;
         
         // Se for rota /me, usar ID do token
-        if (req.route.path === '/me') {
+        if (req.route?.path === '/me') {
             clienteId = req.user.id;
         } else {
             clienteId = req.params.id;
@@ -103,7 +131,7 @@ exports.buscarCliente = async (req, res) => {
         
         res.json(cliente);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao buscar cliente', erro: err.message });
+        sendServerError(res, 'Erro ao buscar cliente', err);
     }
 };
 
@@ -113,7 +141,7 @@ exports.atualizarCliente = async (req, res) => {
         let clienteId;
         
         // Se for rota /me, usar ID do token
-        if (req.route.path === '/me') {
+        if (req.route?.path === '/me') {
             clienteId = req.user.id;
         } else {
             clienteId = req.params.id;
@@ -138,7 +166,7 @@ exports.atualizarCliente = async (req, res) => {
 
         res.json(clienteAtualizado);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao atualizar cliente', erro: err.message });
+        sendServerError(res, 'Erro ao atualizar cliente', err);
     }
 };
 
@@ -157,7 +185,7 @@ exports.deletarCliente = async (req, res) => {
 
         res.json({ msg: 'Cliente desativado com sucesso' });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao deletar cliente', erro: err.message });
+        sendServerError(res, 'Erro ao deletar cliente', err);
     }
 };
 
@@ -176,7 +204,7 @@ exports.deletarProprioCadastro = async (req, res) => {
 
         res.json({ msg: 'Cadastro removido com sucesso' });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao deletar cadastro', erro: err.message });
+        sendServerError(res, 'Erro ao deletar cadastro', err);
     }
 };
 

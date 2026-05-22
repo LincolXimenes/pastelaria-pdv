@@ -18,16 +18,16 @@ const userClienteCorreto = {id: '355', nome: 'Cliente teste', telefone: '11 9863
 describe('Listar Cliente na camada controller', () => {
     
     test('Deletar cliente com sucesso', async () => {
-        clientModel.findByIdAndDelete.mockResolvedValue(userClienteCorreto);
+        clientModel.findByIdAndUpdate.mockResolvedValue({ ...userClienteCorreto, ativo: false });
         await clientController.deletarCliente(req, responseMock);
 
         expect(responseMock.status).not.toHaveBeenCalledWith(404);
         expect(responseMock.status).not.toHaveBeenCalledWith(500);
-        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({ msg:'Cliente deletado com sucesso'}))
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining({ msg:'Cliente desativado com sucesso'}))
     })
 
     test('Tentativa de deletar cliente inxistente', async () => {
-        clientModel.findByIdAndDelete.mockResolvedValue(null);
+        clientModel.findByIdAndUpdate.mockResolvedValue(null);
         await clientController.deletarCliente(req, responseMock);
 
         expect(responseMock.status).toHaveBeenCalledWith(404);
@@ -35,7 +35,7 @@ describe('Listar Cliente na camada controller', () => {
     })
 
      test('Tentativa de deletar com falha no banco de dados', async () => {
-        clientModel.findByIdAndDelete.mockRejectedValue(new Error('Falha no banco'));
+        clientModel.findByIdAndUpdate.mockRejectedValue(new Error('Falha no banco'));
         await clientController.deletarCliente(req, responseMock);
 
         expect(responseMock.status).toHaveBeenCalledWith(500);

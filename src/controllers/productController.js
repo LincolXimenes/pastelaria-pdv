@@ -1,4 +1,5 @@
 const Product = require('../models/productModel');
+const { sendServerError } = require('../utils/errorUtils');
 
 // Criar novo produto
 exports.criarProduto = async (req, res) => {
@@ -12,24 +13,50 @@ exports.criarProduto = async (req, res) => {
         const produto = await Product.create(req.body);
         res.status(201).json(produto);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao criar produto', erro: err.message });
+        sendServerError(res, 'Erro ao criar produto', err);
     }
 };
 
 // Listar todos os produtos
 exports.listarProdutos = async (req, res) => {
     try {
-        const { categoria, emEstoque, destaque } = req.query;
+        const query = req.query || {};
+        const { categoria, emEstoque, destaque } = query;
+        const page = Number.parseInt(query.page, 10);
+        const limit = Number.parseInt(query.limit, 10);
         const filtros = { ativo: true };
+        const shouldPaginate = Number.isInteger(page) || Number.isInteger(limit);
 
         if (categoria) filtros.categoria = categoria;
         if (emEstoque !== undefined) filtros.emEstoque = emEstoque === 'true';
         if (destaque !== undefined) filtros.destaque = destaque === 'true';
 
-        const produtos = await Product.find(filtros).sort({ createdAt: -1 });
-        res.json(produtos);
+        if (!shouldPaginate) {
+            const produtos = await Product.find(filtros).sort({ createdAt: -1 });
+            return res.json(produtos);
+        }
+
+        const safePage = Number.isInteger(page) && page > 0 ? page : 1;
+        const safeLimitRaw = Number.isInteger(limit) && limit > 0 ? limit : 20;
+        const safeLimit = Math.min(safeLimitRaw, 100);
+        const skip = (safePage - 1) * safeLimit;
+
+        const [produtos, total] = await Promise.all([
+            Product.find(filtros).sort({ createdAt: -1 }).skip(skip).limit(safeLimit),
+            Product.countDocuments(filtros)
+        ]);
+
+        return res.json({
+            data: produtos,
+            pagination: {
+                page: safePage,
+                limit: safeLimit,
+                total,
+                totalPages: Math.ceil(total / safeLimit)
+            }
+        });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao listar produtos', erro: err.message });
+        sendServerError(res, 'Erro ao listar produtos', err);
     }
 };
 
@@ -42,7 +69,7 @@ exports.buscarProduto = async (req, res) => {
         }
         res.json(produto);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao buscar produto', erro: err.message });
+        sendServerError(res, 'Erro ao buscar produto', err);
     }
 };
 
@@ -62,7 +89,7 @@ exports.buscarPorNome = async (req, res) => {
 
         res.json(produtos);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao buscar produtos', erro: err.message });
+        sendServerError(res, 'Erro ao buscar produtos', err);
     }
 };
 
@@ -81,7 +108,7 @@ exports.atualizarProduto = async (req, res) => {
 
         res.json(produtoAtualizado);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao atualizar produto', erro: err.message });
+        sendServerError(res, 'Erro ao atualizar produto', err);
     }
 };
 
@@ -109,7 +136,7 @@ exports.atualizarEstoque = async (req, res) => {
 
         res.json(produto);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao atualizar estoque', erro: err.message });
+        sendServerError(res, 'Erro ao atualizar estoque', err);
     }
 };
 
@@ -128,7 +155,7 @@ exports.deletarProduto = async (req, res) => {
 
         res.json({ msg: 'Produto desativado com sucesso' });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao deletar produto', erro: err.message });
+        sendServerError(res, 'Erro ao deletar produto', err);
     }
 };
 
