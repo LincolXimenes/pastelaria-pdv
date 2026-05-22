@@ -56,7 +56,8 @@ if (!process.env.MONGO_URI) {
   process.exit(1);
 }
 if (!process.env.JWT_SECRET) {
-  console.warn('JWT_SECRET não definida no .env. Usando valor padrão inseguro!');
+  console.error('JWT_SECRET não definida no .env');
+  process.exit(1);
 }
 
 // Conectar ao MongoDB e iniciar o servidor

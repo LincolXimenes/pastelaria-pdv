@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/authMiddleware');
 const validateRole = require('../middleware/validateRole');
+const { authLimiter } = require('../middleware/rateLimiters');
 const {
     criarCliente,
     loginCliente,
@@ -14,7 +15,7 @@ const {
 
 // Cadastro e login (públicos)
 router.post('/register', criarCliente);
-router.post('/login', loginCliente);
+router.post('/login', authLimiter, loginCliente);
 
 // Apenas o próprio cliente autenticado pode acessar
 router.get('/me', auth, validateRole('cliente'), buscarCliente);

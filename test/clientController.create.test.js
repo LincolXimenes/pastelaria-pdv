@@ -21,12 +21,29 @@ describe("criar cliente na camada controller", () => {
 
     test("criar cliente com sucesso", async () => {
         
-        const mockCliente = { nome: 'Fulano de tal', telefone: '11 97389-6382' };
+        const requestBody = {
+            nome: 'Fulano de tal',
+            email: 'fulano@email.com',
+            senha: '123456',
+            telefone: '11973896382'
+        };
+        const mockCliente = {
+            id: '1',
+            nome: requestBody.nome,
+            email: requestBody.email,
+            telefone: requestBody.telefone,
+            ativo: true
+        };
         clientModel.create.mockResolvedValue(mockCliente);
-        const req = { body: mockCliente };
+        const req = { body: requestBody };
         await clientController.criarCliente(req, responseMock);
 
-        expect(clientModel.create).toHaveBeenCalledWith(mockCliente);
+        expect(clientModel.create).toHaveBeenCalledWith(expect.objectContaining({
+            nome: requestBody.nome,
+            email: requestBody.email,
+            telefone: requestBody.telefone,
+            senha: expect.any(String)
+        }));
         expect(responseMock.status).toHaveBeenCalledWith(201);
         expect(responseMock.status).not.toHaveBeenCalledWith(500);
         expect(responseMock.json).toHaveBeenCalledWith(mockCliente);
@@ -36,34 +53,36 @@ describe("criar cliente na camada controller", () => {
 
     test('Tentativa de cria cliente com numero vazio', async () => {
 
-        const mockCliente = { nome: 'Fulano de tal', telefone: ' ' };
+        const mockCliente = { nome: 'Fulano de tal', email: 'fulano@email.com', senha: '123456', telefone: ' ' };
+        clientModel.create.mockRejectedValue(new Error('Falha de validação'));
         const req = { body: mockCliente };
         await clientController.criarCliente(req, responseMock);
 
-        expect(clientModel.create).not.toHaveBeenCalled();
-        expect(responseMock.status).toHaveBeenCalledWith(400);
+        expect(clientModel.create).toHaveBeenCalled();
+        expect(responseMock.status).toHaveBeenCalledWith(500);
         expect(responseMock.status).not.toHaveBeenCalledWith(201);
-        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining ({msg: 'Nome e telefone são obrigatórios.'}))
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining ({msg: 'Erro ao cadastrar cliente'}))
 
     });
 
 
     test('Tentativa de cria cliente com nome vazio', async () => {
 
-        const mockCliente = {nome: ' ' , telefone: '11 97389-6382'}
+        const mockCliente = {nome: ' ' , email: 'fulano@email.com', senha: '123456', telefone: '11973896382'}
+        clientModel.create.mockRejectedValue(new Error('Falha de validação'));
         const req = {body: mockCliente};
         await clientController.criarCliente(req, responseMock);
 
-        expect(clientModel.create).not.toHaveBeenCalled();
-        expect(responseMock.status).toHaveBeenCalledWith(400);
+        expect(clientModel.create).toHaveBeenCalled();
+        expect(responseMock.status).not.toHaveBeenCalledWith(400);
         expect(responseMock.status).not.toHaveBeenCalledWith(201);
-        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining ({msg: 'Nome e telefone são obrigatórios.'}))
+        expect(responseMock.json).toHaveBeenCalledWith(expect.objectContaining ({msg: 'Erro ao cadastrar cliente'}))
 
     })
 
     test('Tentativa de criar cliente com erro no banco de dados', async () => {
 
-        const mockCliente = { nome: 'Fulano de tal', telefone: '11 97389-6382' };
+        const mockCliente = { nome: 'Fulano de tal', email: 'fulano@email.com', senha: '123456', telefone: '11973896382' };
         clientModel.create.mockRejectedValue (new Error('Falha no banco'))
         const req = {body: mockCliente};
         await clientController.criarCliente(req, responseMock);

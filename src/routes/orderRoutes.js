@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/authMiddleware');
 const validateRole = require('../middleware/validateRole');
+const { createOrderLimiter } = require('../middleware/rateLimiters');
 const {
     criarPedido,
     listarPedidos,
@@ -12,7 +13,7 @@ const {
 } = require('../controllers/orderController');
 
 // Criar pedido (público/cliente)
-router.post('/', criarPedido);                                        // Criar pedido
+router.post('/', createOrderLimiter, criarPedido);                                        // Criar pedido
 
 // Rotas autenticadas
 router.get('/', auth, validateRole('admin', 'funcionario'), listarPedidos);                                       // Listar pedidos

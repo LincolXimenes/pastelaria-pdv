@@ -32,5 +32,10 @@ const productSchema = new mongoose.Schema({
     ativo: { type: Boolean, default: true }
 }, { timestamps: true });
 
+productSchema.index({ ativo: 1 });
+productSchema.index({ categoria: 1 });
+productSchema.index({ nome: 1 });
+productSchema.index({ nome: 'text' });
+
 module.exports = mongoose.model('Product', productSchema);
 

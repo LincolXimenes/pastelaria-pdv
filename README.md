@@ -1,141 +1,245 @@
 # Pastelaria PDV 🍴
 
-Sistema de gerenciamento de ponto de venda para uma pastelaria. Permite cadastro e controle de clientes, produtos, pedidos e usuários por meio de uma API REST.
+Sistema completo de gerenciamento de ponto de venda para pastelarias. API REST robusta que permite controle total de clientes, produtos, pedidos e usuários com autenticação JWT e sistema de roles.
 
 ---
 
-## 📦 Instalação e Uso
+## 🚀 **Funcionalidades**
 
-### Manualmente
+### **👥 Gestão de Usuários**
+- ✅ Cadastro e autenticação de usuários
+- ✅ Sistema de roles (Admin, Gerente, Funcionário)
+- ✅ Primeiro usuário é automaticamente Admin
+- ✅ Autenticação JWT com tokens seguros
 
-**Pré-requisitos**
-- Node.js (18+)
-- MongoDB rodando localmente ou em nuvem
+### **👤 Gestão de Clientes**
+- ✅ Cadastro e login de clientes
+- ✅ Perfil próprio (visualizar/editar)
+- ✅ Controle administrativo completo
+- ✅ Validações robustas de dados
 
-**Clonando o projeto**
+### **🥟 Gestão de Produtos**
+- ✅ CRUD completo de produtos
+- ✅ Categorias (pastel, bebida, doce, salgado, outros)
+- ✅ Controle de estoque em tempo real
+- ✅ Sistema de ativação/desativação
+- ✅ Produtos em destaque
+
+### **📋 Gestão de Pedidos**
+- ✅ Criação de pedidos com múltiplos produtos
+- ✅ Cálculo automático de totais
+- ✅ Status em tempo real (pendente → concluído)
+- ✅ Métodos de entrega (retirada/entrega)
+- ✅ Geração de links do WhatsApp
+- ✅ Controle automático de estoque
+
+### **🔒 Segurança**
+- ✅ Autenticação JWT
+- ✅ Middleware de autorização
+- ✅ Validação de dados robusta
+- ✅ Senhas criptografadas (bcrypt)
+- ✅ CORS configurado
+
+### **📚 Documentação**
+- ✅ API documentada com Swagger UI
+- ✅ Endpoints interativos
+- ✅ Exemplos de uso completos
+
+---
+
+## 🛠️ **Tecnologias Utilizadas**
+
+- **Backend:** Node.js + Express.js
+- **Banco de Dados:** MongoDB + Mongoose
+- **Autenticação:** JWT (jsonwebtoken)
+- **Segurança:** bcrypt, CORS
+- **Documentação:** Swagger UI
+- **Testes:** Jest
+- **Desenvolvimento:** Nodemon, dotenv
+
+---
+
+## 📦 **Instalação e Configuração**
+
+### **Pré-requisitos**
+- Node.js 18+ 
+- MongoDB (local ou remoto)
+- Git
+
+### **1. Clonar o repositório**
 ```bash
 git clone https://github.com/LincolXimenes/pastelaria-pdv.git
+
+
 cd pastelaria-pdv
 ```
 
-**Instalando dependências**
+### **2. Instalar dependências**
 ```bash
 npm install
 ```
 
-**Configurando variáveis de ambiente**
-Crie um arquivo `.env` na raiz do projeto:
+### **3. Configurar variáveis de ambiente**
+Crie o arquivo `.env` na raiz do projeto:
 ```env
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/pastelaria
-JWT_SECRET=umaChaveSecretaForte123!@#
+MONGO_URI=mongodb://localhost:27017/pastelaria?replicaSet=rs0
+JWT_SECRET=suaChaveSecretaAqui
 JWT_EXPIRES_IN=1d
 ```
 
-**Iniciando o servidor**
+### **3.1 Subir com Docker Compose (Mongo com replica set)**
+As transações de pedido exigem replica set no MongoDB. O `docker-compose.yml` já sobe um replica set de nó único (`rs0`) automaticamente.
+
 ```bash
+docker compose up -d --build
+```
+
+Se você já tinha subido o projeto antes sem replica set, recrie o volume para executar a inicialização:
+
+```bash
+docker compose down -v
+docker compose up -d --build
+```
+
+### **4. Iniciar o servidor**
+```bash
+# Desenvolvimento
 npm run dev
+
+# Produção
+npm start
 ```
-Acesse: [http://localhost:5000](http://localhost:5000)
+
+### **5. Acessar a aplicação**
+- **API:** http://localhost:5000
+- **Documentação:** http://localhost:5000/docs
 
 ---
 
-### Com Docker
+## 🧪 **Primeiros Passos**
 
-**Pré-requisitos**
-- docker
-- docker-compose
-
-**Clonando o projeto**
+### **1. Criar primeiro usuário (Admin)**
 ```bash
-git clone https://github.com/LincolXimenes/pastelaria-pdv.git
-cd pastelaria-pdv
+POST /api/users/register
+{
+  "nome": "Admin Principal",
+  "email": "admin@pastelaria.com",
+  "senha": "123456"
+}
 ```
 
-**Subindo os serviços**
+### **2. Fazer login**
 ```bash
-docker-compose up -d
-```
-Acesse: [http://localhost:5000](http://localhost:5000)
-
----
-
-## 🗂️ Estrutura de Pastas
-
-```
-.
-├── controllers/
-├── middleware/
-├── models/
-├── routes/
-├── utils/
-├── docs/
-│   └── swagger.yaml
-├── server.js
-├── .env
-├── package.json
-├── README.md
+POST /api/users/login
+{
+  "email": "admin@pastelaria.com", 
+  "senha": "123456"
+}
 ```
 
+### **3. Usar token nas requisições autenticadas**
+```bash
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+### **4. Criar produtos**
+```bash
+POST /api/produtos
+{
+  "nome": "Pastel de Carne",
+  "preco": 8.50,
+  "categoria": "pastel",
+  "quantidade": 10
+}
+```
 ---
 
-## ✅ Endpoints da API
+## 📚 **Documentação da API**
 
-### 🔐 `/api/users`
-| Método | Rota                      | Ação              | Permissão         |
-| ------ | ------------------------- | ----------------- | ---------------- |
-| POST   | `/api/users/register`     | Criar usuário     | Admin            |
-| POST   | `/api/users/login`        | Login de usuário  | Público          |
-| GET    | `/api/users/:id`          | Buscar por ID     | Autenticado      |
-| PUT    | `/api/users/:id`          | Atualizar usuário | Autenticado      |
-| DELETE | `/api/users/:id`          | Deletar usuário   | Admin            |
+### **Endpoints Principais**
 
-### 👥 `/api/clientes`
-| Método | Rota                        | Ação                  | Permissão         |
-| ------ | --------------------------- | --------------------- | ---------------- |
-| POST   | `/api/clientes/register`    | Criar cliente         | Público          |
-| POST   | `/api/clientes/login`       | Login cliente         | Público          |
-| GET    | `/api/clientes/me`          | Buscar próprio perfil | Cliente          |
-| PUT    | `/api/clientes/me`          | Atualizar perfil      | Cliente          |
-| DELETE | `/api/clientes/me`          | Deletar próprio perfil| Cliente          |
-| GET    | `/api/clientes`             | Listar clientes       | Admin            |
-| GET    | `/api/clientes/:id`         | Buscar cliente por ID | Admin            |
-| PUT    | `/api/clientes/:id`         | Atualizar cliente     | Admin            |
-| DELETE | `/api/clientes/:id`         | Deletar cliente       | Admin            |
+#### **Usuários**
+- `POST /api/users/register` - Registrar usuário
+- `POST /api/users/login` - Login usuário
+- `GET /api/users/:id` - Buscar usuário
+- `PUT /api/users/:id` - Atualizar usuário
+- `DELETE /api/users/:id` - Deletar usuário
 
-### 📦 `/api/produtos`
-| Método | Rota                         | Ação                  | Permissão                |
-| ------ | ---------------------------- | --------------------- | ------------------------|
-| POST   | `/api/produtos`              | Criar produto         | Admin, Funcionário      |
-| GET    | `/api/produtos`              | Listar produtos       | Público                 |
-| GET    | `/api/produtos/:id`          | Buscar produto por ID | Público                 |
-| GET    | `/api/produtos/search?nome=` | Buscar produto por nome| Público                |
-| PUT    | `/api/produtos/:id`          | Atualizar produto     | Admin, Funcionário      |
-| PUT    | `/api/produtos/:id/estoque`  | Atualizar estoque     | Admin, Funcionário      |
-| DELETE | `/api/produtos/:id`          | Deletar produto       | Admin                   |
+#### **Clientes**
+- `POST /api/clientes/register` - Registrar cliente
+- `POST /api/clientes/login` - Login cliente
+- `GET /api/clientes/me` - Perfil próprio
+- `PUT /api/clientes/me` - Atualizar perfil
+- `DELETE /api/clientes/me` - Deletar conta
 
-### 📏 `/api/pedidos`
-| Método | Rota                           | Ação                        | Permissão         |
-| ------ | ------------------------------ | --------------------------- | ---------------- |
-| POST   | `/api/pedidos`                 | Criar pedido                | Público/Cliente  |
-| GET    | `/api/pedidos`                 | Listar pedidos              | Admin            |
-| GET    | `/api/pedidos/:id`             | Buscar pedido por ID        | Autenticado      |
-| PATCH  | `/api/pedidos/:id/status`      | Atualizar status do pedido  | Autenticado      |
-| DELETE | `/api/pedidos/:id`             | Cancelar pedido             | Admin            |
-| GET    | `/api/pedidos/:id/whatsapp`    | Gerar link do WhatsApp      | Autenticado      |
+#### **Produtos**
+- `GET /api/produtos` - Listar produtos
+- `POST /api/produtos` - Criar produto
+- `GET /api/produtos/:id` - Buscar produto
+- `PUT /api/produtos/:id` - Atualizar produto
+- `DELETE /api/produtos/:id` - Deletar produto
+- `PUT /api/produtos/:id/estoque` - Atualizar estoque
+
+#### **Pedidos**
+- `POST /api/pedidos` - Criar pedido
+- `GET /api/pedidos` - Listar pedidos
+- `GET /api/pedidos/:id` - Buscar pedido
+- `PATCH /api/pedidos/:id/status` - Atualizar status
+- `GET /api/pedidos/:id/whatsapp` - Gerar WhatsApp
+
+### **Sistema de Roles**
+- **Admin:** Acesso total
+- **Gerente:** Gestão de produtos e pedidos
+- **Funcionário:** Operações básicas
+- **Cliente:** Apenas perfil próprio
 
 ---
 
-## 📘 Documentação Interativa da API
+## 🧪 **Testes**
 
-Acesse [http://localhost:5000/docs](http://localhost:5000/docs) para visualizar a documentação Swagger.
-
----
-
-## 🧪 Testando a API
-
-- Use o [Postman](https://www.postman.com/) ou o Swagger UI para testar todos os endpoints.
+- Utilize o [Postman](https://www.postman.com/) ou o Swagger UI para testar todos os endpoints.
 - Certifique-se de que o MongoDB está rodando antes de iniciar o servidor.
+
+```bash
+# Executar todos os testes
+npm test
+
+# Executar testes específicos
+npm test -- clientController
+
+# Executar com coverage
+npm run test:coverage
+```
+
+---
+
+## 🚀 **Deploy**
+
+### **Heroku**
+```bash
+# Login no Heroku
+heroku login
+
+# Criar app
+heroku create pastelaria-pdv
+
+# Configurar variáveis
+heroku config:set MONGO_URI=sua_uri_mongodb
+heroku config:set JWT_SECRET=sua_chave_secreta
+
+# Deploy
+git push heroku main
+```
+
+### **Docker**
+```bash
+# Build
+docker build -t pastelaria-pdv .
+
+# Run
+docker run -p 5000:5000 --env-file .env pastelaria-pdv
+```
 
 ---
 
@@ -148,69 +252,83 @@ Acesse [http://localhost:5000/docs](http://localhost:5000/docs) para visualizar 
 - Nodemon para hot reload
 - Swagger UI para documentação da API
 
----
+## 📁 **Estrutura do Projeto**
 
-## 🔒 Autenticação
-
-- Autenticação JWT para rotas protegidas
-- Middleware `authMiddleware.js` para proteção de rotas
-
----
-
-## 📃 Exemplos de Dados
-
-**Produto:**
-```json
-{
-  "nome": "Pastel de Carne",
-  "preco": 8.5,
-  "quantidade": 10
-}
+```
+pastelaria-pdv/
+├── src/
+│   ├── config/
+│   │   └── corsOptions.js
+│   ├── controllers/
+│   │   ├── clientController.js
+│   │   ├── orderController.js
+│   │   ├── productController.js
+│   │   └── userController.js
+│   ├── middleware/
+│   │   ├── authMiddleware.js
+│   │   ├── errorHandler.js
+│   │   └── validateRole.js
+│   ├── models/
+│   │   ├── clientModel.js
+│   │   ├── orderModel.js
+│   │   ├── productModel.js
+│   │   └── userModel.js
+│   ├── routes/
+│   │   ├── clientRoutes.js
+│   │   ├── orderRoutes.js
+│   │   ├── productRoutes.js
+│   │   └── userRoutes.js
+│   ├── scripts/
+│   │   └── clearDatabase.js
+│   ├── utils/
+│   │   ├── tokenUtils.js
+│   │   └── whatsappUtils.js
+│   └── server.js
+├── test/
+│   └── clientController.create.test.js
+├── swagger.yaml
+├── .env.example
+├── .gitignore
+├── package.json
+└── README.md
 ```
 
-**Cliente:**
-```json
-{
-  "nome": "João Silva",
-  "email": "joao@email.com",
-  "senha": "senha123",
-  "telefone": "11999999999"
-}
-```
+---
 
-**Pedido:**
-```json
-{
-  "cliente": "id_do_cliente",
-  "produtos": [
-    { "produto": "id_do_produto", "quantidade": 2 }
-  ],
-  "metodoEntrega": "retirada",
-  "taxaEntrega": 0
-}
-```
+## 🤝 **Contribuindo**
+
+1. Fork o projeto
+2. Crie uma branch (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -m 'feat: nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request
 
 ---
 
-## 🚀 Futuras Funcionalidades
+## 📝 **Licença**
 
-- Integração com WhatsApp
-- Interface front-end para uso no balcão
-- Relatórios de vendas e pedidos
-- Login e permissões por perfil de usuário
-- Tela de pedidos em tempo real (Socket.IO)
-- Integração com impressora fiscal
-- Dashboard com métricas de vendas
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ---
 
-## 📚 Licença
+## 👨‍💻 **Autor**
 
-Este projeto é livre para fins de estudo e aprendizado. Para uso comercial, faça os devidos ajustes e testes.
+**Lincoln de Mello Ximenes**
+- GitHub: [@LincolXimenes/](https://github.com/LincolXimenes/)
+- LinkedIn: [Lincoln Ximenes](https://www.linkedin.com/in/lincoln-ximenes-1a151393/)
+- Email: lincolnximenes19@gmail.com
 
 ---
 
-Feito com dedicação por:
+## ⭐ **Agradecimentos**
 
-- Lincoln de Mello Ximenes
-- Thiago Fonseca
+- **Thiago Fonseca**
+- Comunidade Node.js
+- Documentação do Express.js
+- MongoDB University
+- Stack Overflow
+
+---
+
+**⚡ Se este projeto foi útil para você, considere dar uma ⭐!**
+

@@ -1,10 +1,12 @@
 services: 
   mongo_db_pastelaria:
     image: mongo:latest
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
       - "27017:27017"
     volumes:
       - pastelaria_data:/data/db
+      - ./docker/mongo-init-replica.js:/docker-entrypoint-initdb.d/mongo-init-replica.js:ro
     restart: always
     networks:
       - net-pastelaria
@@ -16,7 +18,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - MONGO_URI=mongodb://mongo_db_pastelaria:27017/pastelaria
+      - MONGO_URI=mongodb://mongo_db_pastelaria:27017/pastelaria?replicaSet=rs0
     depends_on:
       - mongo_db_pastelaria
     restart: always
