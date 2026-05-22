@@ -1,8 +1,14 @@
 const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
 const Client = require('../models/clientModel');
+const IdempotencyKey = require('../models/idempotencyKeyModel');
 const gerarMensagemWhatsApp = require('../utils/whatsappUtils');
 const { sendServerError } = require('../utils/errorUtils');
+const crypto = require('crypto');
+
+const ORDER_CREATE_ENDPOINT = 'POST:/api/pedidos';
+const IDEMPOTENCY_KEY_MAX_LENGTH = 128;
+const IDEMPOTENCY_TTL_SECONDS = Math.max(60, Number.parseInt(process.env.IDEMPOTENCY_TTL_SECONDS || '900', 10));
 
 function createHttpError(status, msg) {
     const error = new Error(msg);
@@ -10,12 +16,72 @@ function createHttpError(status, msg) {
     return error;
 }
 
+function normalizeForHash(value) {
+    if (Array.isArray(value)) {
+        return value.map(normalizeForHash);
+    }
+
+    if (value && typeof value === 'object') {
+        const sortedKeys = Object.keys(value).sort();
+        const normalized = {};
+
+        for (const key of sortedKeys) {
+            normalized[key] = normalizeForHash(value[key]);
+        }
+
+        return normalized;
+    }
+
+    return value;
+}
+
+function hashRequestBody(body) {
+    const normalized = normalizeForHash(body || {});
+    return crypto.createHash('sha256').update(JSON.stringify(normalized)).digest('hex');
+}
+
+async function getReplayedOrder(idempotencyDoc) {
+    return Order.findById(idempotencyDoc.order)
+        .populate('cliente')
+        .populate('produtos.produto');
+}
+
 // Criar novo pedido
 exports.criarPedido = async (req, res) => {
     let session;
+    const idempotencyKey = req.header('Idempotency-Key')?.trim();
+    const requestHash = idempotencyKey ? hashRequestBody(req.body) : null;
 
     try {
         const { cliente, produtos, metodoEntrega } = req.body;
+
+        if (idempotencyKey && idempotencyKey.length > IDEMPOTENCY_KEY_MAX_LENGTH) {
+            return res.status(400).json({ msg: 'Idempotency-Key inválida. Máximo de 128 caracteres.' });
+        }
+
+        if (idempotencyKey) {
+            const existingKey = await IdempotencyKey.findOne({
+                key: idempotencyKey,
+                endpoint: ORDER_CREATE_ENDPOINT
+            });
+
+            if (existingKey) {
+                if (existingKey.requestHash !== requestHash) {
+                    return res.status(409).json({
+                        msg: 'Idempotency-Key já utilizada com payload diferente.'
+                    });
+                }
+
+                const pedidoRepetido = await getReplayedOrder(existingKey);
+
+                if (pedidoRepetido) {
+                    res.set('Idempotency-Replayed', 'true');
+                    return res.status(200).json(pedidoRepetido);
+                }
+
+                await IdempotencyKey.deleteOne({ _id: existingKey._id });
+            }
+        }
 
         if (!cliente || !produtos || !metodoEntrega) {
             return res.status(400).json({ msg: 'Cliente, produtos e método de entrega são obrigatórios.' });
@@ -92,6 +158,20 @@ exports.criarPedido = async (req, res) => {
             ], { session });
 
             pedidoId = pedido._id;
+
+            if (idempotencyKey) {
+                const expiresAt = new Date(Date.now() + (IDEMPOTENCY_TTL_SECONDS * 1000));
+
+                await IdempotencyKey.create([
+                    {
+                        key: idempotencyKey,
+                        endpoint: ORDER_CREATE_ENDPOINT,
+                        requestHash,
+                        order: pedidoId,
+                        expiresAt
+                    }
+                ], { session });
+            }
         });
 
         const pedidoCompleto = await Order.findById(pedidoId)
@@ -100,6 +180,27 @@ exports.criarPedido = async (req, res) => {
 
         res.status(201).json(pedidoCompleto);
     } catch (err) {
+        if (idempotencyKey && err?.code === 11000) {
+            const existingKey = await IdempotencyKey.findOne({
+                key: idempotencyKey,
+                endpoint: ORDER_CREATE_ENDPOINT
+            });
+
+            if (existingKey) {
+                if (existingKey.requestHash !== requestHash) {
+                    return res.status(409).json({
+                        msg: 'Idempotency-Key já utilizada com payload diferente.'
+                    });
+                }
+
+                const pedidoRepetido = await getReplayedOrder(existingKey);
+                if (pedidoRepetido) {
+                    res.set('Idempotency-Replayed', 'true');
+                    return res.status(200).json(pedidoRepetido);
+                }
+            }
+        }
+
         if (err.status) {
             return res.status(err.status).json({ msg: err.message });
         }
