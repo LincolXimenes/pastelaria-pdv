@@ -7,7 +7,7 @@ jest.mock('../src/models/clientModel');
 describe('Buscar cliente por id na camada controller', () => {
 
     const req = {params: {id:'355'}, body: {nome: "Cliente teste", telefone: '11 98633-4724'}}
-    const userClienteCorreto = {id: '355', nome: 'Cliente teste', telefone: '11 98633-4724'}
+    const userClienteCorreto = {id: '355', nome: 'Cliente teste', telefone: '11 98633-4724', ativo: true}
 
     const responseMock = {
         status: jest.fn().mockReturnThis(),

@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const { gerarToken } = require('../utils/tokenUtils'); // USAR O UTILITÁRIO
+const { sendServerError } = require('../utils/errorUtils');
 
 // Registrar usuário
 exports.registrarUsuario = async (req, res) => {
@@ -46,7 +47,7 @@ exports.registrarUsuario = async (req, res) => {
             token
         });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao registrar usuário', erro: err.message });
+        sendServerError(res, 'Erro ao registrar usuário', err);
     }
 };
 
@@ -91,8 +92,7 @@ exports.loginUsuario = async (req, res) => {
             token
         });
     } catch (err) {
-        console.error('Erro no login:', err);
-        res.status(500).json({ msg: 'Erro no login', erro: err.message });
+        sendServerError(res, 'Erro no login', err);
     }
 };
 
@@ -103,7 +103,7 @@ exports.buscarUsuario = async (req, res) => {
         if (!usuario) return res.status(404).json({ msg: 'Usuário não encontrado' });
         res.json(usuario);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao buscar usuário', erro: err.message });
+        sendServerError(res, 'Erro ao buscar usuário', err);
     }
 };
 
@@ -120,7 +120,7 @@ exports.atualizarUsuario = async (req, res) => {
         if (!atualizado) return res.status(404).json({ msg: 'Usuário não encontrado' });
         res.json(atualizado);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao atualizar usuário', erro: err.message });
+        sendServerError(res, 'Erro ao atualizar usuário', err);
     }
 };
 
@@ -131,7 +131,7 @@ exports.deletarUsuario = async (req, res) => {
         if (!deletado) return res.status(404).json({ msg: 'Usuário não encontrado' });
         res.json({ msg: 'Usuário deletado com sucesso' });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao deletar usuário', erro: err.message });
+        sendServerError(res, 'Erro ao deletar usuário', err);
     }
 };
 

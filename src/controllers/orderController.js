@@ -2,6 +2,7 @@ const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
 const Client = require('../models/clientModel');
 const gerarMensagemWhatsApp = require('../utils/whatsappUtils');
+const { sendServerError } = require('../utils/errorUtils');
 
 // Criar novo pedido
 exports.criarPedido = async (req, res) => {
@@ -74,27 +75,58 @@ exports.criarPedido = async (req, res) => {
 
         res.status(201).json(pedidoCompleto);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao criar pedido', erro: err.message });
+        sendServerError(res, 'Erro ao criar pedido', err);
     }
 };
 
 // Listar pedidos
 exports.listarPedidos = async (req, res) => {
     try {
-        const { status, cliente } = req.query;
+        const query = req.query || {};
+        const { status, cliente } = query;
+        const page = Number.parseInt(query.page, 10);
+        const limit = Number.parseInt(query.limit, 10);
         const filtros = {};
+        const shouldPaginate = Number.isInteger(page) || Number.isInteger(limit);
 
         if (status) filtros.status = status;
         if (cliente) filtros.cliente = cliente;
 
-        const pedidos = await Order.find(filtros)
-            .populate('cliente')
-            .populate('produtos.produto')
-            .sort({ createdAt: -1 });
+        if (!shouldPaginate) {
+            const pedidos = await Order.find(filtros)
+                .populate('cliente')
+                .populate('produtos.produto')
+                .sort({ createdAt: -1 });
 
-        res.json(pedidos);
+            return res.json(pedidos);
+        }
+
+        const safePage = Number.isInteger(page) && page > 0 ? page : 1;
+        const safeLimitRaw = Number.isInteger(limit) && limit > 0 ? limit : 20;
+        const safeLimit = Math.min(safeLimitRaw, 100);
+        const skip = (safePage - 1) * safeLimit;
+
+        const [pedidos, total] = await Promise.all([
+            Order.find(filtros)
+                .populate('cliente')
+                .populate('produtos.produto')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(safeLimit),
+            Order.countDocuments(filtros)
+        ]);
+
+        return res.json({
+            data: pedidos,
+            pagination: {
+                page: safePage,
+                limit: safeLimit,
+                total,
+                totalPages: Math.ceil(total / safeLimit)
+            }
+        });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao listar pedidos', erro: err.message });
+        sendServerError(res, 'Erro ao listar pedidos', err);
     }
 };
 
@@ -111,7 +143,7 @@ exports.buscarPedido = async (req, res) => {
 
         res.json(pedido);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao buscar pedido', erro: err.message });
+        sendServerError(res, 'Erro ao buscar pedido', err);
     }
 };
 
@@ -137,7 +169,7 @@ exports.atualizarStatusPedido = async (req, res) => {
 
         res.json(pedido);
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao atualizar status', erro: err.message });
+        sendServerError(res, 'Erro ao atualizar status', err);
     }
 };
 
@@ -163,7 +195,7 @@ exports.deletarPedido = async (req, res) => {
         
         res.json({ msg: 'Pedido cancelado com sucesso' });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao cancelar pedido', erro: err.message });
+        sendServerError(res, 'Erro ao cancelar pedido', err);
     }
 };
 
@@ -185,7 +217,7 @@ exports.gerarWhatsApp = async (req, res) => {
             mensagem: 'Link do WhatsApp gerado com sucesso'
         });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro ao gerar link do WhatsApp', erro: err.message });
+        sendServerError(res, 'Erro ao gerar link do WhatsApp', err);
     }
 };
 

@@ -1,7 +1,8 @@
 const User = require('../models/userModel');
 const Client = require('../models/clientModel');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
+const { sendServerError } = require('../utils/errorUtils');
 
 const gerarToken = (id, role) => {
     return jwt.sign({ id, role }, process.env.JWT_SECRET, {
@@ -14,12 +15,14 @@ exports.login = async (req, res) => {
     const { email, senha } = req.body;
 
     try {
-        let user = await User.findOne({ email });
-        let role = 'user';
+        let user = await User.findOne({ email }).select('+senha');
+        let role = 'funcionario';
 
         if (!user) {
-            user = await Client.findOne({ email });
-            role = 'client';
+            user = await Client.findOne({ email }).select('+senha');
+            role = 'cliente';
+        } else {
+            role = user.role;
         }
 
         if (!user) return res.status(400).json({ msg: 'Usuário/Cliente não encontrado' });
@@ -35,6 +38,6 @@ exports.login = async (req, res) => {
             token: gerarToken(user._id, role)
         });
     } catch (err) {
-        res.status(500).json({ msg: 'Erro no login', erro: err.message });
+        sendServerError(res, 'Erro no login', err);
     }
 };
