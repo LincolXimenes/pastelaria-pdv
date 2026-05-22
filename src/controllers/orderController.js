@@ -4,8 +4,16 @@ const Client = require('../models/clientModel');
 const gerarMensagemWhatsApp = require('../utils/whatsappUtils');
 const { sendServerError } = require('../utils/errorUtils');
 
+function createHttpError(status, msg) {
+    const error = new Error(msg);
+    error.status = status;
+    return error;
+}
+
 // Criar novo pedido
 exports.criarPedido = async (req, res) => {
+    let session;
+
     try {
         const { cliente, produtos, metodoEntrega } = req.body;
 
@@ -13,69 +21,94 @@ exports.criarPedido = async (req, res) => {
             return res.status(400).json({ msg: 'Cliente, produtos e método de entrega são obrigatórios.' });
         }
 
-        if (produtos.length === 0) {
+        if (!Array.isArray(produtos) || produtos.length === 0) {
             return res.status(400).json({ msg: 'Pedido deve ter pelo menos um produto.' });
         }
 
-        // Verificar se cliente existe
-        const clienteExiste = await Client.findById(cliente);
-        if (!clienteExiste) {
-            return res.status(404).json({ msg: 'Cliente não encontrado.' });
-        }
+        session = await Order.startSession();
 
-        // Calcular total e validar produtos
         let total = 0;
         const produtosProcessados = [];
 
-        for (const item of produtos) {
-            const produto = await Product.findById(item.produto);
-            if (!produto || !produto.ativo) {
-                return res.status(404).json({ msg: `Produto ${item.produto} não encontrado.` });
+        let pedidoId;
+        await session.withTransaction(async () => {
+            const clienteExiste = await Client.findById(cliente).session(session);
+            if (!clienteExiste) {
+                throw createHttpError(404, 'Cliente não encontrado.');
             }
 
-            if (!produto.emEstoque || produto.quantidade < item.quantidade) {
-                return res.status(400).json({ msg: `Produto ${produto.nome} sem estoque suficiente.` });
+            for (const item of produtos) {
+                if (!item?.produto || !Number.isInteger(item.quantidade) || item.quantidade <= 0) {
+                    throw createHttpError(400, 'Cada item do pedido deve ter produto e quantidade válida.');
+                }
+
+                const produtoAtualizado = await Product.findOneAndUpdate(
+                    {
+                        _id: item.produto,
+                        ativo: true,
+                        emEstoque: true,
+                        quantidade: { $gte: item.quantidade }
+                    },
+                    { $inc: { quantidade: -item.quantidade } },
+                    { new: true, session }
+                );
+
+                if (!produtoAtualizado) {
+                    const produtoExiste = await Product.findById(item.produto).session(session);
+
+                    if (!produtoExiste || !produtoExiste.ativo) {
+                        throw createHttpError(404, `Produto ${item.produto} não encontrado.`);
+                    }
+
+                    throw createHttpError(400, `Produto ${produtoExiste.nome} sem estoque suficiente.`);
+                }
+
+                const subtotal = produtoAtualizado.preco * item.quantidade;
+                total += subtotal;
+
+                produtosProcessados.push({
+                    produto: produtoAtualizado._id,
+                    quantidade: item.quantidade,
+                    precoUnitario: produtoAtualizado.preco,
+                    subtotal
+                });
             }
 
-            const subtotal = produto.preco * item.quantidade;
-            total += subtotal;
+            if (metodoEntrega === 'entrega') {
+                const taxaEntrega = req.body.taxaEntrega || 5;
+                total += taxaEntrega;
+            }
 
-            produtosProcessados.push({
-                produto: produto._id,
-                quantidade: item.quantidade,
-                precoUnitario: produto.preco,
-                subtotal
-            });
+            const [pedido] = await Order.create([
+                {
+                    cliente,
+                    produtos: produtosProcessados,
+                    total,
+                    metodoEntrega,
+                    taxaEntrega: metodoEntrega === 'entrega' ? (req.body.taxaEntrega || 5) : 0,
+                    enderecoEntrega: req.body.enderecoEntrega,
+                    observacoes: req.body.observacoes
+                }
+            ], { session });
 
-            // Atualizar estoque
-            await Product.findByIdAndUpdate(produto._id, {
-                $inc: { quantidade: -item.quantidade }
-            });
-        }
-
-        // Adicionar taxa de entrega se for entrega
-        if (metodoEntrega === 'entrega') {
-            const taxaEntrega = req.body.taxaEntrega || 5; // Taxa padrão
-            total += taxaEntrega;
-        }
-
-        const pedido = await Order.create({
-            cliente,
-            produtos: produtosProcessados,
-            total,
-            metodoEntrega,
-            taxaEntrega: metodoEntrega === 'entrega' ? (req.body.taxaEntrega || 5) : 0,
-            enderecoEntrega: req.body.enderecoEntrega,
-            observacoes: req.body.observacoes
+            pedidoId = pedido._id;
         });
 
-        const pedidoCompleto = await Order.findById(pedido._id)
+        const pedidoCompleto = await Order.findById(pedidoId)
             .populate('cliente')
             .populate('produtos.produto');
 
         res.status(201).json(pedidoCompleto);
     } catch (err) {
+        if (err.status) {
+            return res.status(err.status).json({ msg: err.message });
+        }
+
         sendServerError(res, 'Erro ao criar pedido', err);
+    } finally {
+        if (session) {
+            await session.endSession();
+        }
     }
 };
 
@@ -175,27 +208,46 @@ exports.atualizarStatusPedido = async (req, res) => {
 
 // Deletar/Cancelar pedido
 exports.deletarPedido = async (req, res) => {
+    let session;
+
     try {
-        const pedido = await Order.findById(req.params.id);
-        
-        if (!pedido) {
-            return res.status(404).json({ msg: 'Pedido não encontrado' });
-        }
+        session = await Order.startSession();
 
-        // Se o pedido ainda está pendente, devolver produtos ao estoque
-        if (pedido.status === 'pendente') {
-            for (const item of pedido.produtos) {
-                await Product.findByIdAndUpdate(item.produto, {
-                    $inc: { quantidade: item.quantidade }
-                });
+        await session.withTransaction(async () => {
+            const pedido = await Order.findById(req.params.id).session(session);
+
+            if (!pedido) {
+                throw createHttpError(404, 'Pedido não encontrado');
             }
-        }
 
-        await Order.findByIdAndUpdate(req.params.id, { status: 'cancelado' });
+            if (pedido.status === 'pendente') {
+                for (const item of pedido.produtos) {
+                    await Product.findByIdAndUpdate(
+                        item.produto,
+                        { $inc: { quantidade: item.quantidade } },
+                        { session }
+                    );
+                }
+            }
+
+            await Order.findByIdAndUpdate(
+                req.params.id,
+                { status: 'cancelado' },
+                { session }
+            );
+        });
         
         res.json({ msg: 'Pedido cancelado com sucesso' });
     } catch (err) {
+        if (err.status) {
+            return res.status(err.status).json({ msg: err.message });
+        }
+
         sendServerError(res, 'Erro ao cancelar pedido', err);
+    } finally {
+        if (session) {
+            await session.endSession();
+        }
     }
 };
 
