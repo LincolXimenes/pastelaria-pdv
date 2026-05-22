@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/authMiddleware');
 const validateRole = require('../middleware/validateRole');
+const { authLimiter } = require('../middleware/rateLimiters');
 const {
     registrarUsuario,
     loginUsuario,
@@ -12,7 +13,7 @@ const {
 
 // Rotas públicas
 router.post('/register', registrarUsuario); // PÚBLICO para primeiro usuário
-router.post('/login', loginUsuario);
+router.post('/login', authLimiter, loginUsuario);
 
 // Rotas protegidas
 router.get('/:id', auth, buscarUsuario);
