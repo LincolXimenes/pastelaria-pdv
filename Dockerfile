@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:24-alpine
 
 WORKDIR /api_pastelaria
 
@@ -11,4 +11,3 @@ COPY . .
 CMD ["npm", "start"]
 
 EXPOSE 5000
-ENV PORT=5000

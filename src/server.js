@@ -60,8 +60,14 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
+
+// 5 segundos para achar o banco antes de falhar
+const mongooseOptions = {
+  serverSelectionTimeoutMS: 30000,
+};
+
 // Conectar ao MongoDB e iniciar o servidor
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, mongooseOptions)
   .then(() => {
     console.log('MongoDB conectado!');
     app.listen(PORT, () => {
@@ -70,6 +76,7 @@ mongoose.connect(process.env.MONGO_URI)
   })
   .catch((err) => {
     console.error('Erro ao conectar ao MongoDB:', err.message);
+    process.exit(1)
   });
 
 

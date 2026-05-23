@@ -1,24 +1,36 @@
 services: 
   mongo_db_pastelaria:
-    image: mongo:latest
+    container_name: mongo_db_pastelaria
+    image: mongo:${VERSAO_MONGO}
     command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
       - "27017:27017"
     volumes:
       - pastelaria_data:/data/db
-      - ./docker/mongo-init-replica.js:/docker-entrypoint-initdb.d/mongo-init-replica.js:ro
     restart: always
     networks:
       - net-pastelaria
   
+
+  # Serviço que eutomatiza e simplifica o comando montagem do script de replica set
+  mongo-init-replica:
+    container_name: mongo-init-replica
+    image: mongo:${VERSAO_MONGO}
+    depends_on:
+      - mongo_db_pastelaria
+    networks:
+      - net-pastelaria
+    entrypoint: [ "bash", "-c", "sleep 5 && mongosh --host mongo_db_pastelaria:27017 --eval \"rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongo_db_pastelaria:27017'}]})\"" ]
+
+
   api-pastelaria:
     container_name: api-pastelaria
     build: .
-    image: api-pastelaria:latest
+    image: api-pastelaria:${VERSAO_APP}
     ports:
-      - "5000:5000"
+      - "${PORT_API}:${PORT_API}"
     environment:
-      - MONGO_URI=mongodb://mongo_db_pastelaria:27017/pastelaria?replicaSet=rs0
+      - MONGO_URI=${MONGO_URI}
     depends_on:
       - mongo_db_pastelaria
     restart: always
