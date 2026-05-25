@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const helmet = require('helmet');
 const corsOptions = require('./config/corsOptions');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
@@ -13,7 +14,12 @@ const swaggerDocument = YAML.load('./swagger.yaml');
 // Inicializar o app
 const app = express();
 
-// Middlewares
+// Middlewares de segurança
+// Helmet configurado para permitir Swagger em desenvolvimento
+app.use(helmet({
+  contentSecurityPolicy: false, // Desabilitar CSP para permitir Swagger UI
+  crossOriginEmbedderPolicy: false
+}));
 app.use(cors(corsOptions));
 app.use(express.json());
 

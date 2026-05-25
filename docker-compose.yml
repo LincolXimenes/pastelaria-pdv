@@ -1,9 +1,12 @@
 services: 
   mongo_db_pastelaria:
-    image: mongo:latest
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    image: mongo:7-jammy
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--auth"]
     ports:
       - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-changeThisPassword}
     volumes:
       - pastelaria_data:/data/db
       - ./docker/mongo-init-replica.js:/docker-entrypoint-initdb.d/mongo-init-replica.js:ro
@@ -18,7 +21,10 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - MONGO_URI=mongodb://mongo_db_pastelaria:27017/pastelaria?replicaSet=rs0
+      - MONGO_URI=mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-changeThisPassword}@mongo_db_pastelaria:27017/pastelaria?replicaSet=rs0&authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1d}
+      - NODE_ENV=${NODE_ENV:-development}
     depends_on:
       - mongo_db_pastelaria
     restart: always

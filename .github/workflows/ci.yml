@@ -18,11 +18,41 @@ jobs:
 
       - name: Verificar arquivos sensíveis rastreados
         run: |
-          if git ls-files | grep -E '^\.env$|^\.env\.[^e]'; then
-            echo "ERRO: Arquivo .env detectado no repositório. Remova com: git rm --cached .env"
+          echo "🔍 Verificando arquivos sensíveis no repositório..."
+          
+          # Verificar .env e variações
+          if git ls-files | grep -E '^\.env$|^\.env\.[^e]|\.env\.local|\.env\.production'; then
+            echo "❌ ERRO: Arquivo .env detectado no repositório"
+            echo "Execute: git rm --cached .env"
             exit 1
           fi
-          echo "Nenhum arquivo .env rastreado. OK."
+          
+          # Verificar chaves privadas
+          if git ls-files | grep -E '\.pem$|\.key$|_rsa$|\.pfx$'; then
+            echo "❌ ERRO: Arquivo de chave privada detectado"
+            exit 1
+          fi
+          
+          # Verificar arquivos de credenciais
+          if git ls-files | grep -E 'credentials|secrets\.'; then
+            echo "❌ ERRO: Arquivo de credenciais detectado"
+            exit 1
+          fi
+          
+          echo "✅ Nenhum arquivo sensível rastreado. OK."
+
+      - name: Verificar dependências vulneráveis
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      - name: Instalar dependências
+        run: npm ci
+      
+      - name: Audit de segurança
+        run: |
+          npm audit --audit-level=high
+        continue-on-error: false
 
   test:
     runs-on: ubuntu-latest
@@ -48,3 +78,16 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+  # Job informativo - NÃO faz merge automático
+  pr-info:
+    runs-on: ubuntu-latest
+    needs: [security-check, test]
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Informar status
+        run: |
+          echo "✅ Todos os checks passaram!"
+          echo "⚠️  ATENÇÃO: Este PR requer aprovação manual de um revisor humano."
+          echo "🔒 Merge automático está DESABILITADO."
+          echo "👤 Um mantenedor deve revisar e aprovar antes do merge."

@@ -10,6 +10,16 @@ const authLimiter = rateLimit({
     }
 });
 
+const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hora
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        msg: 'Muitas tentativas de registro. Tente novamente mais tarde.'
+    }
+});
+
 const createOrderLimiter = rateLimit({
     windowMs: 5 * 60 * 1000,
     max: 20,
@@ -22,5 +32,6 @@ const createOrderLimiter = rateLimit({
 
 module.exports = {
     authLimiter,
+    registerLimiter,
     createOrderLimiter
 };
