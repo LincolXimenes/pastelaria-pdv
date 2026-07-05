@@ -1,0 +1,26 @@
+services: 
+  api-pastelaria-pdv:
+    container_name: api-pastelaria-pdv
+    image: tfonseca200/api-pastelaria-pdv:${VERSAO_IMAGE_BACKEND}
+    restart: always
+    ports:
+      - "5000:5000"
+    networks:
+      - net-pdv
+    environment:
+      - MONGO_URI=${MONGO_URI_PRD}
+
+  frontend-pastelaria-pdv:
+    container_name: frontend-pastelaria-pdv
+    image: tfonseca200/frontend-pastelaria:${VERSAO_IMAGE_FRONTEND}
+    restart: always
+    ports:
+      - "8080:80"
+    networks:
+      - net-pdv
+    depends_on:
+        - api-pastelaria-pdv
+
+networks:
+  net-pdv:
+    driver: bridge

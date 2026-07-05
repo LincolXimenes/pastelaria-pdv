@@ -19,7 +19,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - MONGO_URI=${MONGO_URI}
+      - MONGO_URI=${MONGO_URI_LOCAL}
     depends_on:
       - mongo_db_pastelaria-pdv
     restart: always
