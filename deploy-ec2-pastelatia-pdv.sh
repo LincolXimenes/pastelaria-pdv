@@ -42,7 +42,7 @@ else
 fi
 
 echo "Executando deploy com Compose Production..."
-docker compose -f "${DOCKER_COMPOSE_PRD}" --env-file .env.compose up -d
+docker compose -f "${DOCKER_COMPOSE_PRD}" --env-file .env up -d
 sleep 3
 
 echo "Deploy realizado com sucesso!"
